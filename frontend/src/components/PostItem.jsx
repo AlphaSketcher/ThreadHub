@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronLeft, X, MessageSquare, Bookmark, CheckCircle2, MoreHorizontal, ShieldCheck, Rocket, BarChart2, Lightbulb, HeartCrack, Reply, ThumbsUp, ThumbsDown, ChevronDown } from 'lucide-react';
+import { ChevronRight, ChevronLeft, X, MessageSquare, Bookmark, CheckCircle2, MoreHorizontal, ShieldCheck, Rocket, BarChart2, Lightbulb, HeartCrack, Reply, ThumbsUp, ThumbsDown, ChevronDown, Edit, Trash2 } from 'lucide-react';
 import { useBookmarks } from '../context/BookmarksContext';
+import { usePosts } from '../context/PostsContext';
+import { useModal } from '../context/ModalContext';
 
 const postCardVariants = {
   hidden: { opacity: 0, y: 50, scale: 0.98 },
@@ -19,10 +21,18 @@ const PostItem = ({ post, onOpenModal }) => {
   const [downvoteCount, setDownvoteCount] = useState(post.initialDownvoteCount || 0);
 
   const { toggleBookmark, isBookmarked } = useBookmarks();
+  const { deletePost } = usePosts();
+  const { openEditThread } = useModal();
   const saved = isBookmarked(post.id);
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+
+  // Check if current user is author
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+  const isAuthor = user && user.username === post.author;
 
   const handleUpvote = () => {
     if (voteStatus === 'up') {
@@ -142,7 +152,75 @@ const PostItem = ({ post, onOpenModal }) => {
               <p>See their threads appear in your orbit feed.</p>
             </div>
           </div>
-          <button className="post-options-btn"><MoreHorizontal size={20} /></button>
+          
+          <div className="post-options-wrapper" style={{ position: 'relative' }}>
+            <button 
+              className="post-options-btn" 
+              onClick={() => setIsOptionsOpen(!isOptionsOpen)}
+            >
+              <MoreHorizontal size={20} />
+            </button>
+            
+            {/* Options Dropdown */}
+            <AnimatePresence>
+              {isOptionsOpen && (
+                <motion.div 
+                  className="post-options-dropdown"
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  transition={{ duration: 0.15 }}
+                  style={{
+                    position: 'absolute',
+                    right: 0,
+                    top: '100%',
+                    marginTop: '0.5rem',
+                    backgroundColor: 'var(--panel-bg)',
+                    borderRadius: 'var(--radius-md)',
+                    boxShadow: 'var(--shadow-md)',
+                    border: '1px solid var(--border-color)',
+                    minWidth: '150px',
+                    zIndex: 50,
+                    overflow: 'hidden'
+                  }}
+                >
+                  {isAuthor ? (
+                    <>
+                      <button 
+                        className="dropdown-item"
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem 1rem', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-dark)', fontSize: '0.9rem', textAlign: 'left' }}
+                        onClick={() => {
+                          setIsOptionsOpen(false);
+                          openEditThread(post);
+                        }}
+                      >
+                        <Edit size={16} /> Edit Thread
+                      </button>
+                      <button 
+                        className="dropdown-item"
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem 1rem', border: 'none', background: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '0.9rem', textAlign: 'left' }}
+                        onClick={() => {
+                          setIsOptionsOpen(false);
+                          if(window.confirm('Are you sure you want to delete this thread?')) {
+                            deletePost(post.id);
+                          }
+                        }}
+                      >
+                        <Trash2 size={16} /> Delete Thread
+                      </button>
+                    </>
+                  ) : (
+                    <button 
+                      className="dropdown-item"
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem 1rem', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-dark)', fontSize: '0.9rem', textAlign: 'left' }}
+                    >
+                      Report Post
+                    </button>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
       

@@ -35,11 +35,11 @@ const BottomNav = () => {
         <span>Create</span>
       </div>
 
-      <div className="nav-item">
+      <div className="nav-item" onClick={() => navigate('/categories')}>
         <LayoutGrid size={22} />
         <span>Categories</span>
       </div>
-      <div className="nav-item">
+      <div className="nav-item" onClick={() => navigate('/my-threads')}>
         <User size={22} />
         <span>My Threads</span>
       </div>

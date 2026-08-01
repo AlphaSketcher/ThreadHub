@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const PostsContext = createContext();
 
@@ -7,14 +7,38 @@ export const usePosts = () => {
 };
 
 export const PostsProvider = ({ children }) => {
-  const [posts, setPosts] = useState(initialPostsData);
+  const [posts, setPosts] = useState(() => {
+    const savedPosts = localStorage.getItem('threadhub_posts');
+    if (savedPosts) {
+      try {
+        return JSON.parse(savedPosts);
+      } catch (e) {
+        console.error("Failed to parse posts from localStorage", e);
+      }
+    }
+    return initialPostsData;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('threadhub_posts', JSON.stringify(posts));
+  }, [posts]);
 
   const addPost = (newPost) => {
     setPosts(prevPosts => [newPost, ...prevPosts]);
   };
 
+  const updatePost = (id, updatedData) => {
+    setPosts(prevPosts => prevPosts.map(post => 
+      post.id === id ? { ...post, ...updatedData } : post
+    ));
+  };
+
+  const deletePost = (id) => {
+    setPosts(prevPosts => prevPosts.filter(post => post.id !== id));
+  };
+
   return (
-    <PostsContext.Provider value={{ posts, addPost }}>
+    <PostsContext.Provider value={{ posts, setPosts, addPost, updatePost, deletePost }}>
       {children}
     </PostsContext.Provider>
   );

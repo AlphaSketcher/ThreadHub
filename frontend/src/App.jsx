@@ -7,7 +7,9 @@ import RightSidebar from './components/RightSidebar';
 import Auth from './components/Auth';
 import BottomNav from './components/BottomNav';
 import CreateThreadModal from './components/CreateThreadModal';
+import EditThreadModal from './components/EditThreadModal';
 import BookmarksPage from './components/BookmarksPage';
+import MyThreadsPage from './components/MyThreadsPage';
 import { ModalProvider } from './context/ModalContext';
 import { BookmarksProvider } from './context/BookmarksContext';
 import { PostsProvider } from './context/PostsContext';
@@ -38,9 +40,12 @@ function App() {
               <Route path="/" element={<MainLayout />}>
                 <Route index element={<MainFeed />} />
                 <Route path="bookmarks" element={<BookmarksPage />} />
+                <Route path="my-threads" element={<MyThreadsPage />} />
               </Route>
               <Route path="/auth" element={<Auth />} />
             </Routes>
+            <CreateThreadModal />
+            <EditThreadModal />
           </ModalProvider>
         </PostsProvider>
       </BookmarksProvider>
