@@ -1,0 +1,299 @@
+.new-auth-page {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: #ffffff;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+}
+
+.new-auth-container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  background-color: transparent;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* LEFT PANEL */
+.new-auth-left {
+  flex: 1;
+  background-color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem; /* Padding so the image becomes a floating card */
+}
+
+.new-auth-illus {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 24px; /* Rounded edges for the image */
+  box-shadow: 0 20px 50px rgba(30, 27, 75, 0.15); /* Shadow effect */
+}
+
+/* RIGHT PANEL */
+.new-auth-right {
+  flex: 1;
+  background-color: #fafafa; /* Slight off-white to make the form card pop */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-y: hidden;
+  padding: 2rem 4rem;
+  align-items: center;
+}
+
+.new-auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  align-self: center;
+}
+
+.new-auth-logo img {
+  height: 48px; /* Increased from 28px as requested */
+}
+
+.new-form-wrapper {
+  width: 100%;
+  max-width: 480px; /* Increased to make form bigger */
+  background-color: #ffffff;
+  padding: 2.5rem;
+  border-radius: 32px;
+  box-shadow: 0 15px 50px rgba(30, 27, 75, 0.06); /* Shadow effect as requested */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: auto 0;
+}
+
+.new-form-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1e1b4b;
+  text-align: center;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  white-space: pre-line;
+}
+
+.new-form {
+  width: 100%;
+}
+
+.new-input-group {
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.new-input-group input {
+  width: 100%;
+  padding: 0.85rem 1.2rem; /* slightly increased padding */
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  font-size: 0.95rem;
+  color: #1e1b4b;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.new-input-group input::placeholder {
+  color: #94a3b8;
+}
+
+.new-input-group input:focus {
+  border-color: #6366f1;
+}
+
+.new-toggle-password {
+  position: absolute;
+  right: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.new-form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  color: #64748b;
+  padding: 0 0.5rem;
+}
+
+.new-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.new-forgot {
+  color: #1e1b4b;
+  font-weight: 500;
+}
+
+.new-btn-submit {
+  width: 100%;
+  background-color: #6366f1;
+  color: white;
+  padding: 0.85rem;
+  border-radius: 24px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+  margin-bottom: 1.5rem;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.new-btn-submit:hover {
+  background-color: #4f46e5;
+}
+
+.new-btn-submit:active {
+  transform: scale(0.98);
+}
+
+.new-social-section {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.new-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background-color: #e2e8f0;
+}
+
+.new-social-text {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.new-google-btn {
+  width: 100%;
+  background-color: #ffffff;
+  color: #1e1b4b;
+  border: 1px solid #e2e8f0;
+  padding: 0.85rem;
+  border-radius: 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.new-google-btn:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.new-google-btn:active {
+  transform: scale(0.98);
+}
+
+.new-terms {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-bottom: 3rem;
+  padding: 0 1rem;
+  line-height: 1.5;
+}
+
+.new-terms a {
+  color: #6366f1;
+  font-weight: 600;
+}
+
+.new-auth-switch {
+  font-size: 0.8rem;
+  color: #1e1b4b;
+  text-align: center;
+  margin-top: auto;
+}
+
+.new-switch-link {
+  color: #6366f1;
+  font-weight: 700;
+  margin-left: 0.3rem;
+  font-size: 0.8rem;
+}
+
+.new-switch-link:hover {
+  text-decoration: underline;
+}
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 900px) {
+  .new-auth-container {
+    flex-direction: column;
+  }
+
+  .new-auth-left {
+    display: none; /* Hide the illustration on mobile to focus on the form */
+  }
+
+  .new-auth-right {
+    padding: 1.5rem;
+    background: linear-gradient(to bottom, #e0e7ff, #818cf8); /* Cool purple gradient on mobile */
+    justify-content: center;
+  }
+
+  .new-form-wrapper {
+    max-width: 100%;
+    padding: 2.5rem 1.5rem;
+    box-shadow: 0 15px 50px rgba(30, 27, 75, 0.15); /* Bring back shadow on mobile */
+    border-radius: 24px; /* Beautiful rounded card on mobile */
+    background-color: #ffffff; /* White card */
+  }
+
+  .new-form-title {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .new-input-group input {
+    padding: 0.8rem 1rem;
+  }
+
+  .new-auth-logo img {
+    height: 40px; /* Slightly smaller logo for mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .new-auth-right {
+    padding: 1rem;
+  }
+  
+  .new-form-wrapper {
+    padding: 1.5rem 1rem;
+  }
+  
+  .new-form-title {
+    font-size: 1.6rem;
+  }
+}
