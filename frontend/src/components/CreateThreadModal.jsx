@@ -26,6 +26,11 @@ const CreateThreadModal = () => {
   // Preview State
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
+  // Poll State
+  const [isPollOpen, setIsPollOpen] = useState(false);
+  const [pollOptions, setPollOptions] = useState(['', '']);
+  const [pollLength, setPollLength] = useState('1 day');
+
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
   
@@ -129,7 +134,17 @@ const CreateThreadModal = () => {
   };
 
   const handlePostSubmit = () => {
-    if (!title.trim() || !postContent.trim() || !selectedCategory) {
+    let finalContent = postContent;
+    
+    if (isPollOpen) {
+      const validOptions = pollOptions.filter(opt => opt.trim() !== '');
+      if (validOptions.length >= 2) {
+        finalContent += '\n\n**Poll:**\n' + validOptions.map(opt => `- [ ] ${opt}`).join('\n');
+        finalContent += `\n_Ends in ${pollLength}_`;
+      }
+    }
+
+    if (!title.trim() || (!finalContent.trim() && mediaPreviews.length === 0) || !selectedCategory) {
       alert("Please fill in the title, category, and content.");
       return;
     }
@@ -154,7 +169,7 @@ const CreateThreadModal = () => {
       categoryColor: categoryColors[selectedCategory] || { bg: "#f1f5f9", text: "#475569" },
       title: title,
       hasShield: false,
-      snippet: postContent,
+      snippet: finalContent,
       images: mediaPreviews,
       tags: [],
       initialVoteCount: 0,
@@ -172,6 +187,8 @@ const CreateThreadModal = () => {
     setPostContent('');
     setSelectedCategory('');
     setMediaPreviews([]);
+    setIsPollOpen(false);
+    setPollOptions(['', '']);
   };
 
   const isScheduled = scheduleDate && scheduleTime;
@@ -308,6 +325,61 @@ const CreateThreadModal = () => {
                     </div>
                   )}
 
+                  {/* Poll Builder UI */}
+                  {isPollOpen && (
+                    <div className="poll-builder-container">
+                      <div className="poll-inputs">
+                        {pollOptions.map((opt, idx) => (
+                          <div key={idx} className="poll-input-wrapper">
+                            <input
+                              type="text"
+                              className="poll-input"
+                              placeholder={`Choice ${idx + 1}`}
+                              value={opt}
+                              onChange={(e) => {
+                                const newOpts = [...pollOptions];
+                                newOpts[idx] = e.target.value;
+                                setPollOptions(newOpts);
+                              }}
+                              maxLength={25}
+                            />
+                            {idx >= 2 && (
+                              <button 
+                                className="poll-remove-opt-btn"
+                                onClick={() => {
+                                  const newOpts = pollOptions.filter((_, i) => i !== idx);
+                                  setPollOptions(newOpts);
+                                }}
+                              >
+                                <X size={14} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="poll-actions">
+                        {pollOptions.length < 4 && (
+                          <button className="poll-add-btn" onClick={() => setPollOptions([...pollOptions, ''])}>
+                            + Add choice
+                          </button>
+                        )}
+                        <div className="poll-length-selector">
+                          <span>Poll length:</span>
+                          <select value={pollLength} onChange={e => setPollLength(e.target.value)} className="poll-select">
+                            <option value="1 hour">1 hour</option>
+                            <option value="12 hours">12 hours</option>
+                            <option value="1 day">1 day</option>
+                            <option value="3 days">3 days</option>
+                            <option value="7 days">7 days</option>
+                          </select>
+                        </div>
+                      </div>
+                      <button className="poll-remove-btn" onClick={() => { setIsPollOpen(false); setPollOptions(['', '']); }}>
+                        Remove poll
+                      </button>
+                    </div>
+                  )}
+
                   {/* Scheduling UI */}
                   {isScheduleOpen && (
                     <div className="schedule-panel">
@@ -361,7 +433,7 @@ const CreateThreadModal = () => {
                       <button className="x-icon-btn gif-btn" title="GIF" onClick={() => insertAtCursor('![GIF](gif_url)')}>
                         <span style={{fontSize: '10px', fontWeight: 'bold', border: '1px solid currentColor', borderRadius: '4px', padding: '0 2px'}}>GIF</span>
                       </button>
-                      <button className="x-icon-btn" title="Poll" onClick={() => insertAtCursor('\n- [ ] Option 1\n- [ ] Option 2\n')}>
+                      <button className={`x-icon-btn ${isPollOpen ? 'active' : ''}`} title="Poll" onClick={() => setIsPollOpen(!isPollOpen)}>
                         <List size={18} />
                       </button>
                       <button className="x-icon-btn" onClick={() => insertAtCursor('😀')} title="Emoji">
