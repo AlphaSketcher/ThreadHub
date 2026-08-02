@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, X, MessageSquare, Bookmark, CheckCircle2, MoreHorizontal, ShieldCheck, Rocket, BarChart2, Lightbulb, HeartCrack, Reply, ThumbsUp, ThumbsDown, ChevronDown, Edit, Trash2 } from 'lucide-react';
 import { useBookmarks } from '../context/BookmarksContext';
 import { usePosts } from '../context/PostsContext';
 import { useModal } from '../context/ModalContext';
+import { useNotifications } from '../context/NotificationsContext';
+import { useNavigate } from 'react-router-dom';
 
 const postCardVariants = {
   hidden: { opacity: 0, y: 50, scale: 0.98 },
@@ -16,51 +18,68 @@ const postCardVariants = {
 };
 
 const PostItem = ({ post, onOpenModal }) => {
-  const [voteStatus, setVoteStatus] = useState('none');
-  const [voteCount, setVoteCount] = useState(post.initialVoteCount);
-  const [downvoteCount, setDownvoteCount] = useState(post.initialDownvoteCount || 0);
-
   const { toggleBookmark, isBookmarked } = useBookmarks();
-  const { deletePost } = usePosts();
+  const { deletePost, toggleVote } = usePosts();
   const { openEditThread } = useModal();
+  const { addNotification } = useNotifications();
   const saved = isBookmarked(post.id);
+  const navigate = useNavigate();
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Check if current user is author
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
   const isAuthor = user && user.username === post.author;
 
-  const handleUpvote = () => {
-    if (voteStatus === 'up') {
-      setVoteStatus('none');
-      setVoteCount(prev => prev - 1);
-    } else if (voteStatus === 'down') {
-      setVoteStatus('up');
-      setVoteCount(prev => prev + 1);
-      setDownvoteCount(prev => prev - 1);
-    } else {
-      setVoteStatus('up');
-      setVoteCount(prev => prev + 1);
+  // Determine if post is long
+  const isLongText = post.snippet && post.snippet.length > 250;
+
+  // Derived vote states
+  const upvotes = post.upvotes || [];
+  const downvotes = post.downvotes || [];
+  
+  const voteStatus = user ? (upvotes.includes(user.username) ? 'up' : downvotes.includes(user.username) ? 'down' : 'none') : 'none';
+  const displayVoteCount = (post.initialVoteCount || 0) + upvotes.length;
+  const displayDownvoteCount = (post.initialDownvoteCount || 0) + downvotes.length;
+
+  const handleVote = (type) => {
+    if (!user) {
+      alert("You must be logged in to vote.");
+      navigate('/auth');
+      return;
+    }
+    
+    const wasAdded = toggleVote(post.id, user.username, type);
+    
+    // Only send notification on a NEW like (not removal, and not downvote)
+    if (wasAdded && type === 'up') {
+      addNotification({
+        type: 'like',
+        fromUser: user.username,
+        toUser: post.author,
+        postId: post.id,
+        message: `@${user.username} liked your post "${post.title}"`
+      });
     }
   };
 
-  const handleDownvote = () => {
-    if (voteStatus === 'down') {
-      setVoteStatus('none');
-      setDownvoteCount(prev => prev - 1);
-    } else if (voteStatus === 'up') {
-      setVoteStatus('down');
-      setDownvoteCount(prev => prev + 1);
-      setVoteCount(prev => prev - 1);
+  useEffect(() => {
+    if (lightboxOpen) {
+      document.body.classList.add('no-scroll');
+      document.documentElement.classList.add('no-scroll');
     } else {
-      setVoteStatus('down');
-      setDownvoteCount(prev => prev + 1);
+      document.body.classList.remove('no-scroll');
+      document.documentElement.classList.remove('no-scroll');
     }
-  };
+    return () => {
+      document.body.classList.remove('no-scroll');
+      document.documentElement.classList.remove('no-scroll');
+    };
+  }, [lightboxOpen]);
 
   const openLightbox = (index) => {
     setCurrentImageIndex(index);
@@ -228,7 +247,16 @@ const PostItem = ({ post, onOpenModal }) => {
         <h3 className="post-title">
           {post.title} {post.hasShield && <ShieldCheck size={18} className="title-shield" />}
         </h3>
-        <p className="post-snippet">{post.snippet}</p>
+        
+        <div className={`post-snippet-wrapper ${isLongText && !isExpanded ? 'collapsed' : ''}`}>
+          <p className="post-snippet">{post.snippet}</p>
+          {isLongText && !isExpanded && <div className="snippet-fade"></div>}
+        </div>
+        {isLongText && (
+          <button className="see-more-btn" onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}>
+            {isExpanded ? 'Show less' : 'See more'}
+          </button>
+        )}
         
         {renderPhotoCollage()}
         
@@ -245,26 +273,26 @@ const PostItem = ({ post, onOpenModal }) => {
         <div className={`yt-vote-container ${voteStatus !== 'none' ? `voted-${voteStatus}` : ''}`}>
           <motion.button 
             className={`yt-vote-btn up ${voteStatus === 'up' ? 'active' : ''}`}
-            onClick={handleUpvote}
+            onClick={() => handleVote('up')}
             whileTap={{ scale: 0.85 }}
           >
             <motion.div animate={{ rotate: voteStatus === 'up' ? [0, -15, 10, 0] : 0 }} transition={{ duration: 0.4 }}>
               <ThumbsUp size={18} className={voteStatus === 'up' ? 'fill-icon' : ''} />
             </motion.div>
-            <span className="yt-vote-count">{voteCount}</span>
+            <span className="yt-vote-count">{displayVoteCount}</span>
           </motion.button>
           
           <div className="yt-vote-divider"></div>
           
           <motion.button 
             className={`yt-vote-btn down ${voteStatus === 'down' ? 'active' : ''}`}
-            onClick={handleDownvote}
+            onClick={() => handleVote('down')}
             whileTap={{ scale: 0.85 }}
           >
             <motion.div animate={{ rotate: voteStatus === 'down' ? [0, 15, -10, 0] : 0 }} transition={{ duration: 0.4 }}>
               <ThumbsDown size={18} className={voteStatus === 'down' ? 'fill-icon' : ''} />
             </motion.div>
-            <span className="yt-vote-count">{downvoteCount}</span>
+            <span className="yt-vote-count">{displayDownvoteCount}</span>
           </motion.button>
         </div>
 

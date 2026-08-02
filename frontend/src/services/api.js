@@ -1,4 +1,5 @@
-export const API_URL = 'http://localhost:8080/api';
+// Use the VITE_API_URL environment variable if available, otherwise default to local development URL
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 export const authService = {
   async register(username, email, password) {

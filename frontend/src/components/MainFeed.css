@@ -344,6 +344,46 @@
   color: var(--text-muted);
   line-height: 1.5;
   margin-bottom: 1rem;
+  white-space: pre-wrap; /* Preserve line breaks */
+}
+
+/* Post Snippet Truncation */
+.post-snippet-wrapper {
+  position: relative;
+}
+
+.post-snippet-wrapper.collapsed .post-snippet {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.snippet-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  background: linear-gradient(to bottom, transparent 0%, var(--panel-bg) 100%);
+  pointer-events: none;
+}
+
+.see-more-btn {
+  color: var(--primary);
+  background: none;
+  border: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+.see-more-btn:hover {
+  text-decoration: underline;
 }
 
 /* Photo Collage Grid (Twitter/X Style) */

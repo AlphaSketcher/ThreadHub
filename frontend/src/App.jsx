@@ -13,6 +13,7 @@ import MyThreadsPage from './components/MyThreadsPage';
 import { ModalProvider } from './context/ModalContext';
 import { BookmarksProvider } from './context/BookmarksContext';
 import { PostsProvider } from './context/PostsContext';
+import { NotificationsProvider } from './context/NotificationsContext';
 import './App.css';
 
 const MainLayout = () => (
@@ -35,18 +36,20 @@ function App() {
     <Router>
       <BookmarksProvider>
         <PostsProvider>
-          <ModalProvider>
-            <Routes>
-              <Route path="/" element={<MainLayout />}>
-                <Route index element={<MainFeed />} />
-                <Route path="bookmarks" element={<BookmarksPage />} />
-                <Route path="my-threads" element={<MyThreadsPage />} />
-              </Route>
-              <Route path="/auth" element={<Auth />} />
-            </Routes>
-            <CreateThreadModal />
-            <EditThreadModal />
-          </ModalProvider>
+          <NotificationsProvider>
+            <ModalProvider>
+              <Routes>
+                <Route path="/" element={<MainLayout />}>
+                  <Route index element={<MainFeed />} />
+                  <Route path="bookmarks" element={<BookmarksPage />} />
+                  <Route path="my-threads" element={<MyThreadsPage />} />
+                </Route>
+                <Route path="/auth" element={<Auth />} />
+              </Routes>
+              <CreateThreadModal />
+              <EditThreadModal />
+            </ModalProvider>
+          </NotificationsProvider>
         </PostsProvider>
       </BookmarksProvider>
     </Router>

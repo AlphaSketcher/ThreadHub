@@ -115,3 +115,8 @@ ul {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Scroll Lock Utility */
+html.no-scroll, body.no-scroll {
+  overflow: hidden !important;
+}

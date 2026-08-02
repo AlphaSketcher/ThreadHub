@@ -33,12 +33,128 @@ export const PostsProvider = ({ children }) => {
     ));
   };
 
+  const toggleVote = (id, username, type) => {
+    let wasAdded = false;
+    setPosts(prevPosts => prevPosts.map(post => {
+      if (post.id !== id) return post;
+      
+      let upvotes = post.upvotes || [];
+      let downvotes = post.downvotes || [];
+
+      if (type === 'up') {
+        if (upvotes.includes(username)) {
+          // Remove upvote
+          upvotes = upvotes.filter(u => u !== username);
+        } else {
+          // Add upvote, remove downvote if exists
+          upvotes = [...upvotes, username];
+          downvotes = downvotes.filter(u => u !== username);
+          wasAdded = true;
+        }
+      } else if (type === 'down') {
+        if (downvotes.includes(username)) {
+          // Remove downvote
+          downvotes = downvotes.filter(u => u !== username);
+        } else {
+          // Add downvote, remove upvote if exists
+          downvotes = [...downvotes, username];
+          upvotes = upvotes.filter(u => u !== username);
+          wasAdded = true;
+        }
+      }
+
+      return { ...post, upvotes, downvotes };
+    }));
+    return wasAdded;
+  };
+
+  // Helper to recursively find and update a comment
+  const recursivelyUpdateComment = (comments, commentId, updateFn) => {
+    if (!comments) return [];
+    return comments.map(comment => {
+      if (comment.id === commentId) {
+        return updateFn(comment);
+      }
+      if (comment.replies && comment.replies.length > 0) {
+        return { ...comment, replies: recursivelyUpdateComment(comment.replies, commentId, updateFn) };
+      }
+      return comment;
+    });
+  };
+
+  const addComment = (postId, parentCommentId, newCommentData) => {
+    setPosts(prevPosts => prevPosts.map(post => {
+      if (post.id !== postId) return post;
+      
+      const newComment = {
+        id: Date.now(), // Generate a unique ID
+        ...newCommentData,
+        helpfulVotes: [],
+        notHelpfulVotes: [],
+        helpfulCount: 0,
+        notHelpfulCount: 0,
+        replies: []
+      };
+
+      if (!parentCommentId) {
+        // Top-level comment
+        return { 
+          ...post, 
+          comments: [...(post.comments || []), newComment],
+          discussCount: (post.discussCount || 0) + 1
+        };
+      }
+
+      // Nested reply
+      const updatedComments = recursivelyUpdateComment(post.comments, parentCommentId, (parentComment) => {
+        return { ...parentComment, replies: [...(parentComment.replies || []), newComment] };
+      });
+
+      return { 
+        ...post, 
+        comments: updatedComments,
+        discussCount: (post.discussCount || 0) + 1
+      };
+    }));
+  };
+
+  const voteComment = (postId, commentId, username, type) => {
+    setPosts(prevPosts => prevPosts.map(post => {
+      if (post.id !== postId) return post;
+
+      const updatedComments = recursivelyUpdateComment(post.comments, commentId, (comment) => {
+        let helpfulVotes = comment.helpfulVotes || [];
+        let notHelpfulVotes = comment.notHelpfulVotes || [];
+
+        if (type === 'helpful') {
+          if (helpfulVotes.includes(username)) {
+            helpfulVotes = helpfulVotes.filter(u => u !== username);
+          } else {
+            helpfulVotes = [...helpfulVotes, username];
+            notHelpfulVotes = notHelpfulVotes.filter(u => u !== username);
+          }
+        } else if (type === 'not-helpful') {
+          if (notHelpfulVotes.includes(username)) {
+            notHelpfulVotes = notHelpfulVotes.filter(u => u !== username);
+          } else {
+            notHelpfulVotes = [...notHelpfulVotes, username];
+            helpfulVotes = helpfulVotes.filter(u => u !== username);
+          }
+        }
+
+        return { ...comment, helpfulVotes, notHelpfulVotes };
+      });
+
+      return { ...post, comments: updatedComments };
+    }));
+  };
+
   const deletePost = (id) => {
     setPosts(prevPosts => prevPosts.filter(post => post.id !== id));
   };
 
   return (
-    <PostsContext.Provider value={{ posts, setPosts, addPost, updatePost, deletePost }}>
+    <PostsContext.Provider value={{ posts, setPosts, addPost, updatePost, deletePost, toggleVote, addComment, voteComment }}>
       {children}
     </PostsContext.Provider>
   );
@@ -60,6 +176,8 @@ const initialPostsData = [
     tags: ["Pandemic", "COVID-19", "Health", "Global"],
     initialVoteCount: 32,
     initialDownvoteCount: 7,
+    upvotes: [],
+    downvotes: [],
     discussCount: 128,
     hasComment: true,
     comments: [
@@ -118,6 +236,8 @@ const initialPostsData = [
     tags: ["UI/UX", "Dashboard", "Design", "Glassmorphism"],
     initialVoteCount: 156,
     initialDownvoteCount: 3,
+    upvotes: [],
+    downvotes: [],
     discussCount: 89,
     hasComment: true,
     comments: [
@@ -148,6 +268,8 @@ const initialPostsData = [
     tags: [],
     initialVoteCount: 24,
     initialDownvoteCount: 2,
+    upvotes: [],
+    downvotes: [],
     discussCount: 42,
     hasComment: false,
     comments: []

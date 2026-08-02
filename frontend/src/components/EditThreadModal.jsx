@@ -91,11 +91,42 @@ const EditThreadModal = () => {
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      // Limit to 4 images
-      const newPreviews = files
-        .slice(0, 4 - mediaPreviews.length)
-        .map(file => URL.createObjectURL(file));
-      setMediaPreviews(prev => [...prev, ...newPreviews]);
+      const selectedFiles = files.slice(0, 4 - mediaPreviews.length);
+      
+      selectedFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const MAX_DIM = 800;
+
+            if (width > height) {
+              if (width > MAX_DIM) {
+                height *= MAX_DIM / width;
+                width = MAX_DIM;
+              }
+            } else {
+              if (height > MAX_DIM) {
+                width *= MAX_DIM / height;
+                height = MAX_DIM;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            const base64Data = canvas.toDataURL('image/jpeg', 0.7);
+            setMediaPreviews(prev => [...prev, base64Data]);
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
     }
     e.target.value = null;
   };

@@ -3,12 +3,14 @@ import { Search, SlidersHorizontal, Bell, MessageSquare, User } from 'lucide-rea
 import './Header.css';
 
 import { Link, useNavigate } from 'react-router-dom';
+import { useNotifications } from '../context/NotificationsContext';
 
 const Header = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
+  const { getUserNotifications, getUnreadCount, markAllAsRead } = useNotifications();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -50,16 +52,33 @@ const Header = () => {
               </div>
               
               <div className="user-menu-container">
-                <div className="icon-btn">
+                <div className="icon-btn" onClick={() => user && markAllAsRead(user.username)}>
                   <Bell size={22} />
-                  <span className="badge">5</span>
+                  {user && getUnreadCount(user.username) > 0 && (
+                    <span className="badge">{getUnreadCount(user.username)}</span>
+                  )}
                 </div>
                 <div className="profile-dropdown">
                   <div className="dropdown-title-header">Notifications</div>
                   <div className="dropdown-divider"></div>
-                  <div className="dropdown-empty-state">
-                    <p>No new notifications</p>
-                  </div>
+                  
+                  {user && getUserNotifications(user.username).length > 0 ? (
+                    <div className="notifications-list" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                      {getUserNotifications(user.username).map(notif => (
+                        <div key={notif.id} style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border-color)', fontSize: '0.85rem' }}>
+                          {notif.message}
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                            {new Date(notif.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="dropdown-empty-state">
+                      <p>No new notifications</p>
+                    </div>
+                  )}
+                  
                   <div className="dropdown-divider"></div>
                   <Link to="#" className="dropdown-view-all">View all notifications</Link>
                 </div>

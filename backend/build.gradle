@@ -32,6 +32,9 @@ dependencies {
 	// Use H2 for development so it works out of the box without setup
 	runtimeOnly 'com.h2database:h2'
 	
+	// PostgreSQL driver for production
+	runtimeOnly 'org.postgresql:postgresql'
+	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
