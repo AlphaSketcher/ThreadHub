@@ -1,12 +1,13 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Home, Compass, Plus, LayoutGrid, User } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Home, Compass, Plus, Bookmark, User } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
 import './BottomNav.css';
 
 const BottomNav = () => {
   const { openCreateThread } = useModal();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleCreateClick = () => {
     const token = localStorage.getItem('token');
@@ -17,13 +18,19 @@ const BottomNav = () => {
     }
   };
 
+  const isActive = (path) => {
+    if (path === '/' && location.pathname === '/') return true;
+    if (path !== '/' && location.pathname.startsWith(path)) return true;
+    return false;
+  };
+
   return (
     <div className="bottom-nav">
-      <div className="nav-item active">
+      <div className={`nav-item ${isActive('/') && location.pathname === '/' ? 'active' : ''}`} onClick={() => navigate('/')}>
         <Home size={22} />
         <span>Home</span>
       </div>
-      <div className="nav-item">
+      <div className={`nav-item ${isActive('/category/popular') ? 'active' : ''}`} onClick={() => navigate('/category/popular')}>
         <Compass size={22} />
         <span>Discover</span>
       </div>
@@ -35,13 +42,13 @@ const BottomNav = () => {
         <span>Create</span>
       </div>
 
-      <div className="nav-item" onClick={() => navigate('/categories')}>
-        <LayoutGrid size={22} />
-        <span>Categories</span>
+      <div className={`nav-item ${isActive('/bookmarks') ? 'active' : ''}`} onClick={() => navigate('/bookmarks')}>
+        <Bookmark size={22} />
+        <span>Saved</span>
       </div>
-      <div className="nav-item" onClick={() => navigate('/my-threads')}>
+      <div className={`nav-item ${isActive('/my-threads') ? 'active' : ''}`} onClick={() => navigate('/my-threads')}>
         <User size={22} />
-        <span>My Threads</span>
+        <span>Profile</span>
       </div>
     </div>
   );
