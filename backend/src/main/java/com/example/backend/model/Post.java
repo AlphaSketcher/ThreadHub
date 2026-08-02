@@ -29,6 +29,7 @@ public class Post {
     private String snippet;
 
     @ElementCollection
+    @Column(name = "image_data", columnDefinition = "TEXT")
     private List<String> images = new ArrayList<>();
 
     @ElementCollection
