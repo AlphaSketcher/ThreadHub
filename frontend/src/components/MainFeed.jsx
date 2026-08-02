@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronRight, ChevronLeft, X, MessageSquare, Bookmark, CheckCircle2, MoreHorizontal, ShieldCheck, Rocket, Settings2, BarChart2, Lightbulb, HeartCrack, Reply, ThumbsUp, ThumbsDown, ChevronDown } from 'lucide-react';
 import PostDetailsModal from './PostDetailsModal';
@@ -33,6 +33,7 @@ const postCardVariants = {
 
 const MainFeed = () => {
   const { categoryId } = useParams();
+  const navigate = useNavigate();
   const [selectedPost, setSelectedPost] = useState(null);
   const { posts, loading } = usePosts();
 
@@ -80,7 +81,7 @@ const MainFeed = () => {
   if (loading) {
     return (
       <main className="main-feed" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid rgba(0,0,0,0.1)', borderTopColor: 'var(--primary-color)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+        <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid rgba(0,0,0,0.1)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </main>
     );
@@ -97,11 +98,11 @@ const MainFeed = () => {
       {!categoryId && (
         <motion.div variants={feedItemVariants} className="hero-banner">
           <h2 className="hero-welcome">Welcome to ThreadHub 👋</h2>
-          <h1 className="hero-title">Share ideas. Start conversations.<br/>Connect with the world.</h1>
-          <p className="hero-subtitle">Be part of meaningful discussions on anything that matters.</p>
+          <h1 className="hero-title">Join the<br/>conversation.</h1>
+          <p className="hero-subtitle">Share. Connect. Discover.</p>
           <div className="hero-actions">
-            <button className="btn-explore">Explore Trending <ArrowRight size={16} /></button>
-            <button className="btn-categories">Explore Categories</button>
+            <button className="btn-explore" onClick={() => navigate('/creators')}>Top Creators <ArrowRight size={16} /></button>
+            <button className="btn-categories" onClick={() => navigate('/categories')}>Explore Categories</button>
           </div>
         </motion.div>
       )}

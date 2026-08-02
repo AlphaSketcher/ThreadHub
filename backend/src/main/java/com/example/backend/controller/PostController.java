@@ -11,12 +11,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/posts")
+@Transactional
 public class PostController {
 
     @Autowired
@@ -99,7 +101,7 @@ public class PostController {
                 post.getDownvotes().remove(actualUsername);
                 
                 // Create Notification
-                if (!post.getAuthor().equals(actualUsername)) {
+                if (post.getAuthor() != null && !post.getAuthor().equals(actualUsername)) {
                     Notification notif = new Notification();
                     notif.setRecipient(post.getAuthor());
                     notif.setSender(actualUsername);

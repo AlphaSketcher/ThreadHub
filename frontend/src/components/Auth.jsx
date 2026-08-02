@@ -36,7 +36,13 @@ const Auth = () => {
       
       // Save token and user details to localStorage
       localStorage.setItem('token', res.token);
-      localStorage.setItem('user', JSON.stringify({ username: res.username, email: res.email }));
+      localStorage.setItem('user', JSON.stringify({ 
+        username: res.username, 
+        email: res.email,
+        bio: res.bio,
+        location: res.location,
+        profileImage: res.profileImage
+      }));
       
       // Redirect to home/dashboard
       navigate('/');

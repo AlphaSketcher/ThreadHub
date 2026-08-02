@@ -13,11 +13,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/posts/{postId}/comments")
+@Transactional
 public class CommentController {
 
     @Autowired
@@ -68,7 +70,7 @@ public class CommentController {
         messagingTemplate.convertAndSend("/topic/posts", wsMessage);
         
         // Create Notification
-        if (!post.getAuthor().equals(actualUsername)) {
+        if (post.getAuthor() != null && !post.getAuthor().equals(actualUsername)) {
             Notification notif = new Notification();
             notif.setRecipient(post.getAuthor());
             notif.setSender(actualUsername);
@@ -110,7 +112,7 @@ public class CommentController {
                 comment.getNotHelpfulVotes().remove(actualUsername);
                 
                 // Create Notification
-                if (!comment.getAuthor().equals(actualUsername)) {
+                if (comment.getAuthor() != null && !comment.getAuthor().equals(actualUsername)) {
                     Notification notif = new Notification();
                     notif.setRecipient(comment.getAuthor());
                     notif.setSender(actualUsername);

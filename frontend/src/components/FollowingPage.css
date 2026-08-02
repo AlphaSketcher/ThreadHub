@@ -63,7 +63,7 @@
   left: 0;
   right: 0;
   height: 40px;
-  background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+  background: linear-gradient(135deg, var(--primary-light), var(--primary));
   opacity: 0.2;
   z-index: 0;
 }
@@ -141,7 +141,7 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto 1.5rem;
-  color: var(--primary-color);
+  color: var(--primary);
 }
 
 .empty-following h2 {
@@ -160,7 +160,7 @@
 
 .explore-btn {
   padding: 0.75rem 1.5rem;
-  background: var(--primary-color);
+  background: var(--primary);
   color: white;
   border: none;
   border-radius: 20px;

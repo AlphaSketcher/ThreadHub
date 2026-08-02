@@ -1,0 +1,745 @@
+<h1>ThreadHub: Modern Online Community Discussion Forum</h1>
+<p><strong>Project Documentation</strong></p>
+<hr>
+<h2>1. Cover Page</h2>
+<p><strong>Project Title:</strong> ThreadHub - A Modern Online Community Discussion Forum
+<strong>Project Type:</strong> Software Engineering Project Documentation
+<strong>Author:</strong> Software Engineering Team
+<strong>Date:</strong> August 2026
+<strong>Institution/Organization:</strong> [University/Organization Name]</p>
+<hr>
+<h2>2. Table of Contents</h2>
+<ol>
+<li>Cover Page</li>
+<li>Table of Contents</li>
+<li>Abstract</li>
+<li>Introduction</li>
+<li>Background of the Study</li>
+<li>Problem Statement</li>
+<li>Aim of the Project</li>
+<li>Objectives</li>
+<li>Scope of the Project</li>
+<li>Limitations</li>
+<li>Literature Review</li>
+<li>System Analysis</li>
+<li>Functional Requirements</li>
+<li>Non-functional Requirements</li>
+<li>Software Requirements</li>
+<li>Hardware Requirements</li>
+<li>System Architecture</li>
+<li>Database Design</li>
+<li>System Design</li>
+<li>Features of ThreadHub</li>
+<li>Security Features</li>
+<li>Workflow of the System</li>
+<li>User Journey</li>
+<li>Testing</li>
+<li>Future Improvements</li>
+<li>Challenges Encountered</li>
+<li>Conclusion</li>
+<li>Recommendations</li>
+<li>References</li>
+<li>Appendix</li>
+</ol>
+<hr>
+<h2>3. Abstract</h2>
+<p>The advent of Web 2.0 has facilitated unprecedented levels of global connectivity, yet many existing online discussion forums suffer from archaic user interfaces, sluggish performance, and inadequate community moderation tools. This project details the design, development, and evaluation of <strong>ThreadHub</strong>, a modern, responsive, and highly interactive online community discussion forum. Built upon a robust technological stack comprising React.js for the frontend, Java (Spring Boot) for the backend, and PostgreSQL for the relational database, ThreadHub aims to foster meaningful digital conversations. The platform integrates essential features such as secure user authentication, threaded discussions, real-time reactions, user-following mechanisms, and dynamic trending topic discovery. By adhering to clean architecture principles and stringent security protocols, ThreadHub delivers a scalable and maintainable solution that addresses the deficiencies of legacy forum platforms, thereby providing users with a premium, engaging, and secure communication environment.</p>
+<hr>
+<h2>4. Introduction</h2>
+<p>In the contemporary digital era, online communities serve as vital hubs for knowledge exchange, networking, and social interaction. Forums have historically been the backbone of this digital discourse. However, as user expectations have evolved, the demand for platforms offering seamless navigation, aesthetically pleasing interfaces, and real-time interactions has surged. ThreadHub is conceptualised to meet these demands by providing a sophisticated discussion platform that prioritises user experience (UX) and system performance. This documentation provides a comprehensive overview of the ThreadHub project, chronicling its development lifecycle from initial conceptualisation and requirements engineering to system architecture, implementation, and rigorous testing.</p>
+<hr>
+<h2>5. Background of the Study</h2>
+<p>The evolution of digital communication has transitioned from rudimentary bulletin board systems (BBS) to complex, algorithm-driven social media platforms. Despite the proliferation of the latter, dedicated discussion forums remain indispensable for in-depth, topic-centric conversations. Traditional forums, however, often utilise monolithic architectures that hinder scalability and adaptability. The need for a modernised approach is evident—one that leverages contemporary web technologies such as Single Page Applications (SPAs) and RESTful Application Programming Interfaces (APIs). ThreadHub is developed against this backdrop, seeking to amalgamate the focused discourse of traditional forums with the fluidity and responsiveness characteristic of modern social networking applications.</p>
+<hr>
+<h2>6. Problem Statement</h2>
+<p>Existing discussion platforms frequently exhibit one or more of the following critical deficiencies:</p>
+<ol>
+<li><strong>Outdated User Interfaces:</strong> Many forums rely on legacy designs that are neither intuitive nor responsive across diverse devices, leading to suboptimal user engagement.</li>
+<li><strong>Performance Bottlenecks:</strong> Monolithic architectures and inefficient database querying often result in high latency, particularly during peak traffic periods.</li>
+<li><strong>Inadequate Content Discovery:</strong> Users frequently struggle to identify relevant or trending discussions due to poor categorisation and search functionalities.</li>
+<li><strong>Security Vulnerabilities:</strong> Insufficient implementation of modern security standards leaves platforms susceptible to attacks such as Cross-Site Scripting (XSS) and SQL Injection.
+ThreadHub seeks to resolve these issues by architecting a platform that is inherently secure, highly performant, and designed with a meticulous focus on modern UI/UX paradigms.</li>
+</ol>
+<hr>
+<h2>7. Aim of the Project</h2>
+<p>The primary aim of this project is to design, develop, and deploy a state-of-the-art online community discussion forum (ThreadHub) that facilitates engaging, secure, and well-organised digital conversations, thereby providing a superior alternative to legacy forum software.</p>
+<hr>
+<h2>8. Objectives</h2>
+<p>To achieve the overarching aim, the following specific objectives have been established:</p>
+<ul>
+<li>To design a highly responsive, modern, and accessible user interface using React.js.</li>
+<li>To develop a scalable and robust backend RESTful API utilising Java (Spring Boot).</li>
+<li>To implement a secure relational database schema using PostgreSQL to manage users, threads, comments, and interactions efficiently.</li>
+<li>To integrate comprehensive security measures, including robust authentication (e.g., JWT), password hashing, and protection against common web vulnerabilities.</li>
+<li>To implement advanced platform features such as real-time trending algorithms, user following, bookmarks, and rich-text thread creation.</li>
+<li>To conduct rigorous unit, integration, and user acceptance testing to ensure system reliability and performance.</li>
+</ul>
+<hr>
+<h2>9. Scope of the Project</h2>
+<p>The scope of ThreadHub encompasses the development of the core forum functionalities. This includes user registration and profile management, the creation and management of categories, threads, and comments, as well as interaction mechanisms such as reactions and bookmarks. The project also covers the implementation of an administrative dashboard for content moderation and user management. Geographically and demographically, the platform is designed to be universally accessible, catering to any community requiring a digital discussion space. </p>
+<hr>
+<h2>10. Limitations</h2>
+<p>While ThreadHub is designed to be comprehensive, certain limitations exist within the current project scope:</p>
+<ul>
+<li><strong>Real-Time Communication:</strong> The current iteration does not support real-time WebSocket-based private messaging; interactions are asynchronous.</li>
+<li><strong>Media Hosting:</strong> Due to infrastructure constraints, the platform relies on external CDNs or limited local storage for image hosting within threads.</li>
+<li><strong>Advanced AI Moderation:</strong> The system currently relies on human moderation and keyword filtering, lacking sophisticated AI-driven sentiment analysis for automatic toxic content removal.</li>
+</ul>
+<hr>
+<h2>11. Literature Review</h2>
+<h3>Online Forums and Social Communities</h3>
+<p>Digital forums have long been the cornerstone of internet communities. Studies indicate that structured, topic-based forums foster higher quality discourse compared to the ephemeral nature of microblogging platforms. The persistence of data allows for the creation of vast knowledge repositories.</p>
+<h3>Existing Platforms (Reddit, X, Facebook Groups, Quora, Discord)</h3>
+<ul>
+<li><strong>Reddit:</strong> Utilises a subreddit structure allowing for niche communities. However, its complex interface can be daunting for new users.</li>
+<li><strong>X (formerly Twitter):</strong> Excels in real-time updates but is ill-suited for deep, structured, and persistent discussions.</li>
+<li><strong>Facebook Groups:</strong> Leverages existing social graphs but suffers from limited searchability and algorithmic feed manipulation that obscures chronological discourse.</li>
+<li><strong>Quora:</strong> Focuses strictly on Q&amp;A, lacking the conversational fluidity of a standard forum.</li>
+<li><strong>Discord:</strong> Provides excellent real-time chat but is inherently synchronous, making it difficult to track long-term, asynchronous topics.</li>
+</ul>
+<h3>Why ThreadHub?</h3>
+<p>ThreadHub amalgamates the structured, categorical approach of traditional forums with the aesthetic and functional fluidity of modern web applications. By eschewing algorithmic timeline manipulation in favour of user-curated discovery and trending metrics, ThreadHub ensures that content visibility is driven by authentic community engagement rather than opaque algorithms.</p>
+<hr>
+<h2>12. System Analysis</h2>
+<p>System analysis for ThreadHub involved a meticulous examination of user needs and technical feasibility. The analysis phase determined that a client-server architecture, specifically a decoupled SPA (Single Page Application) and a RESTful API backend, was the most appropriate approach. This decoupling allows for independent scaling of the frontend and backend and facilitates potential future developments, such as native mobile applications.</p>
+<hr>
+<h2>13. Functional Requirements</h2>
+<p>Functional requirements define the specific behaviours and functions the system must support:</p>
+<ul>
+<li><strong>User Management:</strong> Users must be able to register, log in, update profiles, and follow/unfollow other users.</li>
+<li><strong>Content Creation:</strong> Authenticated users shall be able to create, edit, and delete threads and comments.</li>
+<li><strong>Categorisation:</strong> Threads must be assignable to specific predefined categories.</li>
+<li><strong>Engagement:</strong> Users must be able to react (e.g., like/dislike) to threads and comments, and bookmark threads for future reference.</li>
+<li><strong>Discovery:</strong> The system must provide a search mechanism to find threads by title or content, and display a dynamic list of trending topics.</li>
+<li><strong>Notifications:</strong> Users shall receive notifications for replies to their threads, comments, and new followers.</li>
+<li><strong>Moderation:</strong> Administrators must possess the capability to delete inappropriate content and suspend user accounts.</li>
+</ul>
+<hr>
+<h2>14. Non-functional Requirements</h2>
+<p>Non-functional requirements specify the criteria that judge the operation of the system:</p>
+<ul>
+<li><strong>Performance:</strong> The system should load the initial frontend payload in under 2 seconds. API responses should average under 200 milliseconds.</li>
+<li><strong>Scalability:</strong> The backend architecture must be stateless to allow horizontal scaling behind a load balancer.</li>
+<li><strong>Security:</strong> All user passwords must be hashed using a strong cryptographic algorithm (e.g., BCrypt). Data in transit must be encrypted via HTTPS/TLS.</li>
+<li><strong>Usability:</strong> The user interface must be fully responsive, adhering to WCAG 2.1 AA accessibility standards, ensuring compatibility across mobile, tablet, and desktop devices.</li>
+<li><strong>Reliability:</strong> The system should target an uptime of 99.9%, with automated database backups performed daily.</li>
+</ul>
+<hr>
+<h2>15. Software Requirements</h2>
+<ul>
+<li><strong>Frontend:</strong> React.js, React Router, Axios, CSS3/TailwindCSS (for styling), Vite (Build Tool).</li>
+<li><strong>Backend:</strong> Java 17+, Spring Boot, Spring Security, Spring Data JPA, Hibernate.</li>
+<li><strong>Database:</strong> PostgreSQL 15+.</li>
+<li><strong>Version Control:</strong> Git, GitHub.</li>
+<li><strong>Development Environment:</strong> Visual Studio Code (VS Code), IntelliJ IDEA (optional for Java).</li>
+<li><strong>API Testing:</strong> Postman / Insomnia.</li>
+</ul>
+<hr>
+<h2>16. Hardware Requirements</h2>
+<p><strong>Development Machine:</strong></p>
+<ul>
+<li>Processor: Intel Core i5 / AMD Ryzen 5 or higher.</li>
+<li>RAM: Minimum 8 GB (16 GB recommended).</li>
+<li>Storage: 256 GB SSD minimum.</li>
+</ul>
+<p><strong>Production Server (Minimum Specifications):</strong></p>
+<ul>
+<li>Processor: 2 vCPUs.</li>
+<li>RAM: 4 GB.</li>
+<li>Storage: 50 GB SSD.</li>
+<li>Operating System: Ubuntu 22.04 LTS (or similar Linux distribution).</li>
+</ul>
+<hr>
+<h2>17. System Architecture</h2>
+<p>ThreadHub employs a modern Three-Tier Architecture:</p>
+<ol>
+<li><strong>Presentation Tier (Client):</strong> A React.js Single Page Application running in the user&#39;s browser, responsible for UI rendering and user interaction.</li>
+<li><strong>Application Tier (Server):</strong> A Java Spring Boot REST API that processes business logic, handles authentication, and orchestrates data access.</li>
+<li><strong>Data Tier (Database):</strong> A PostgreSQL relational database storing all persistent data.</li>
+</ol>
+<pre><code class="language-mermaid">flowchart TD
+    Client[React.js Frontend (Browser)] &lt;--&gt;|HTTPS / JSON| LoadBalancer[Reverse Proxy / Load Balancer]
+    LoadBalancer &lt;--&gt; API[Java Spring Boot Backend API]
+    API &lt;--&gt;|JDBC / Hibernate| Database[(PostgreSQL Database)]
+</code></pre>
+<hr>
+<h2>18. Database Design</h2>
+<h3>Explain Every Table</h3>
+<ul>
+<li><strong>Users:</strong> Stores user credentials and profile information.</li>
+<li><strong>Categories:</strong> Defines the broad topics under which threads are organised.</li>
+<li><strong>Threads:</strong> Represents the main discussion posts created by users.</li>
+<li><strong>Comments:</strong> Stores replies associated with specific threads.</li>
+<li><strong>Reactions:</strong> Records user likes/dislikes on threads and comments.</li>
+<li><strong>Bookmarks:</strong> Tracks which threads a user has saved.</li>
+<li><strong>Followers:</strong> A junction table managing the many-to-many relationship of users following other users.</li>
+</ul>
+<h3>Relationships</h3>
+<ul>
+<li>One <strong>User</strong> can create multiple <strong>Threads</strong> (1:N).</li>
+<li>One <strong>Category</strong> can contain multiple <strong>Threads</strong> (1:N).</li>
+<li>One <strong>Thread</strong> can have multiple <strong>Comments</strong> (1:N).</li>
+<li>One <strong>User</strong> can leave multiple <strong>Comments</strong> (1:N).</li>
+<li><strong>Followers</strong> is a recursive many-to-many relationship on the Users table.</li>
+</ul>
+<h3>ER Diagram Description</h3>
+<p>The ER diagram illustrates the entities and their interconnections. The central entities are <code>User</code> and <code>Thread</code>. A <code>User</code> acts as a primary key referenced as a foreign key in <code>Thread</code>, <code>Comment</code>, <code>Reaction</code>, and <code>Bookmark</code>. This ensures referential integrity across the system.</p>
+<pre><code class="language-mermaid">erDiagram
+    USERS ||--o{ THREADS : creates
+    USERS ||--o{ COMMENTS : writes
+    USERS ||--o{ REACTIONS : makes
+    USERS ||--o{ BOOKMARKS : saves
+    USERS ||--o{ FOLLOWERS : follows
+    USERS ||--o{ FOLLOWERS : followed_by
+    CATEGORIES ||--o{ THREADS : contains
+    THREADS ||--o{ COMMENTS : has
+    THREADS ||--o{ REACTIONS : receives
+    COMMENTS ||--o{ REACTIONS : receives
+
+    USERS {
+        uuid id PK
+        string username
+        string email
+        string password_hash
+        timestamp created_at
+    }
+    CATEGORIES {
+        int id PK
+        string name
+        string description
+    }
+    THREADS {
+        uuid id PK
+        string title
+        text content
+        uuid author_id FK
+        int category_id FK
+        timestamp created_at
+    }
+    COMMENTS {
+        uuid id PK
+        text content
+        uuid thread_id FK
+        uuid author_id FK
+        timestamp created_at
+    }
+    REACTIONS {
+        uuid id PK
+        uuid user_id FK
+        uuid target_id
+        string target_type
+        string reaction_type
+    }
+</code></pre>
+<hr>
+<h2>19. System Design</h2>
+<h3>UI Design</h3>
+<p>The UI is designed with a &quot;mobile-first&quot; philosophy. It utilises a clean, modern aesthetic characterised by ample whitespace, a consistent colour palette tailored for readability, and distinct typographic hierarchy. A dark mode toggle is integrated to enhance accessibility and user preference.</p>
+<h3>Navigation Flow</h3>
+<ol>
+<li><strong>Unauthenticated:</strong> Landing Page -&gt; Login / Registration -&gt; Browse Categories (Read Only).</li>
+<li><strong>Authenticated:</strong> Dashboard (Trending/Feed) -&gt; Create Thread / View Profile / Browse Categories -&gt; Thread Detail View -&gt; Post Comment / React.</li>
+</ol>
+<h3>User Roles</h3>
+<ul>
+<li><strong>Guest:</strong> Can view threads, comments, and categories, but cannot interact or post.</li>
+<li><strong>Registered User:</strong> Can create threads, comment, react, follow users, and manage their profile.</li>
+<li><strong>Administrator:</strong> Possesses all Registered User privileges, plus the ability to manage categories, delete any thread/comment, and suspend users.</li>
+</ul>
+<hr>
+<h2>20. Features of ThreadHub</h2>
+<ul>
+<li><strong>Authentication:</strong> Secure login and registration using JWT (JSON Web Tokens). Passwords are never stored in plaintext.</li>
+<li><strong>Create/Edit/Delete Thread:</strong> Rich text editing capabilities for expressive post creation. Users retain full control over their content.</li>
+<li><strong>Categories:</strong> Organised community spaces ensuring discussions remain on-topic and easily discoverable.</li>
+<li><strong>Comments &amp; Replies:</strong> Nested or chronological discussion flows beneath main threads.</li>
+<li><strong>Reactions:</strong> Immediate feedback mechanisms (upvote/downvote or likes) fostering community consensus.</li>
+<li><strong>Bookmarks:</strong> A personal repository for users to save threads for future reading.</li>
+<li><strong>Search &amp; Discover:</strong> Full-text search capabilities allowing users to find specific topics rapidly.</li>
+<li><strong>Notifications:</strong> In-app alerts informing users of interactions with their content.</li>
+<li><strong>User Profiles:</strong> Customisable spaces showcasing a user&#39;s activity, joined date, and avatar.</li>
+<li><strong>Follow Users:</strong> Establishing personal networks within the broader community to tailor the content feed.</li>
+<li><strong>Trending Topics:</strong> An algorithmic display of currently popular threads based on recent engagement metrics.</li>
+<li><strong>Responsive Design:</strong> Flawless operation across all screen sizes, from mobile phones to ultra-wide desktop monitors.</li>
+</ul>
+<hr>
+<h2>21. Security Features</h2>
+<p>Security is paramount in ThreadHub&#39;s architecture:</p>
+<ul>
+<li><strong>Password Encryption:</strong> Utilisation of BCrypt hashing algorithm with a high work factor to thwart brute-force and rainbow table attacks.</li>
+<li><strong>Authentication &amp; Authorization:</strong> JWT-based stateless authentication. Role-Based Access Control (RBAC) ensures users can only perform actions permitted by their role.</li>
+<li><strong>Input Validation:</strong> Strict server-side validation of all incoming data using Spring Boot Validation annotations to prevent malformed data entry.</li>
+<li><strong>SQL Injection Prevention:</strong> Exclusive use of JPA/Hibernate and parameterized queries completely mitigates SQL injection risks.</li>
+<li><strong>XSS Prevention:</strong> React.js inherently escapes variables by default, protecting against Cross-Site Scripting. Further sanitisation is applied to any rendered rich text.</li>
+<li><strong>CORS Configuration:</strong> Strict Cross-Origin Resource Sharing policies to ensure the API only accepts requests from trusted frontend domains.</li>
+</ul>
+<hr>
+<h2>22. Workflow of the System</h2>
+<p>The system operates on an event-driven request-response model:</p>
+<ol>
+<li>The user interacts with the React frontend (e.g., clicks &quot;Submit Post&quot;).</li>
+<li>The frontend formulates an asynchronous HTTP request (e.g., POST <code>/api/threads</code>) containing the payload and the user&#39;s JWT in the Authorization header.</li>
+<li>The Spring Boot backend intercepts the request, validates the JWT, and authorises the user.</li>
+<li>The backend validates the payload.</li>
+<li>The backend interacts with the PostgreSQL database to persist the new thread.</li>
+<li>The backend returns an HTTP 201 Created response to the frontend.</li>
+<li>The frontend updates the UI dynamically without a full page reload, displaying the newly created thread.</li>
+</ol>
+<hr>
+<h2>23. User Journey</h2>
+<pre><code class="language-mermaid">journey
+    title A User&#39;s Journey on ThreadHub
+    section Onboarding
+      Visit Homepage: 5: User
+      Navigate to Registration: 4: User
+      Submit Registration Details: 5: User
+    section Engagement
+      Login to Account: 5: User
+      Browse Trending Topics: 4: User
+      Read a Thread: 5: User
+      Leave a Comment: 5: User
+      Upvote the Thread: 4: User
+    section Creation
+      Navigate to &#39;New Thread&#39;: 4: User
+      Select Category &amp; Write Content: 5: User
+      Publish Thread: 5: User
+</code></pre>
+<hr>
+<h2>24. Testing</h2>
+<p>Robust testing strategies were employed to ensure software quality:</p>
+<ul>
+<li><strong>Unit Testing:</strong> Utilising JUnit and Mockito for the backend to test individual service methods in isolation. Jest and React Testing Library were used for frontend components.</li>
+<li><strong>Integration Testing:</strong> Testing the interaction between the Spring Boot application and a test PostgreSQL database using Spring Boot Test.</li>
+<li><strong>UI Testing:</strong> Manual and automated testing (e.g., Cypress) to ensure frontend components render correctly and user flows function as expected.</li>
+<li><strong>User Acceptance Testing (UAT):</strong> Beta testing conducted with a select group of users to validate that the software meets business requirements and is intuitive to use.</li>
+</ul>
+<hr>
+<h2>25. Future Improvements</h2>
+<p>Continuous evolution is planned for ThreadHub. Future iterations will aim to incorporate:</p>
+<ul>
+<li><strong>Real-Time Chat:</strong> Implementing WebSockets for direct, user-to-user private messaging.</li>
+<li><strong>Advanced Media Handling:</strong> Integration with cloud storage (e.g., AWS S3) for seamless image and video uploads within threads.</li>
+<li><strong>Mobile Application:</strong> Developing native iOS and Android applications using React Native to expand accessibility.</li>
+<li><strong>Gamification:</strong> Introducing badges, reputation scores, and achievements to further incentivize positive community engagement.</li>
+</ul>
+<hr>
+<h2>26. Challenges Encountered</h2>
+<p>During the development lifecycle, several challenges were addressed:</p>
+<ul>
+<li><strong>State Management:</strong> Managing complex state in the React frontend (e.g., user authentication status, cached thread data) required careful implementation of Context API/Redux to avoid prop-drilling and unnecessary re-renders.</li>
+<li><strong>Database Query Optimisation:</strong> As the volume of relational data grew, retrieving complex threaded comments necessitated the optimisation of JPA queries and the introduction of database indexing to maintain low latency.</li>
+<li><strong>CORS and Security Configuration:</strong> Properly configuring Spring Security to handle pre-flight requests and JWT validation seamlessly with the frontend required extensive debugging.</li>
+</ul>
+<hr>
+<h2>27. Conclusion</h2>
+<p>The ThreadHub project successfully culminated in the development of a modern, robust, and highly functional online community discussion forum. By strategically employing a decoupled architecture with React.js and Java Spring Boot, the platform achieves a synthesis of high performance, stringent security, and an exceptional user experience. ThreadHub not only addresses the shortcomings of legacy forum software but also provides a scalable foundation capable of supporting a growing and dynamic digital community.</p>
+<hr>
+<h2>28. Recommendations</h2>
+<p>Based on the project&#39;s outcomes, it is recommended that:</p>
+<ul>
+<li>Organisations seeking to deploy custom community platforms consider the decoupled SPA/REST API architecture utilised herein, as it offers superior maintainability.</li>
+<li>Continuous monitoring and logging (e.g., using ELK stack) be implemented in production environments to proactively identify and resolve potential issues.</li>
+<li>Community guidelines and human moderation protocols be established prior to public launch, as technological solutions alone cannot wholly govern user behaviour.</li>
+</ul>
+<hr>
+<h2>29. References</h2>
+<ol>
+<li>Fowler, M. (2002). <em>Patterns of Enterprise Application Architecture</em>. Addison-Wesley Professional.</li>
+<li>React Documentation. (2026). <em>React: A JavaScript library for building user interfaces</em>. Retrieved from <a href="https://react.dev/">https://react.dev/</a></li>
+<li>Spring Boot Reference Guide. (2026). <em>Spring Boot</em>. VMware. Retrieved from <a href="https://spring.io/projects/spring-boot">https://spring.io/projects/spring-boot</a></li>
+<li>PostgreSQL Global Development Group. (2026). <em>PostgreSQL Documentation</em>. Retrieved from <a href="https://www.postgresql.org/docs/">https://www.postgresql.org/docs/</a></li>
+<li>OWASP Foundation. (2026). <em>OWASP Top Ten Web Application Security Risks</em>. Retrieved from <a href="https://owasp.org/www-project-top-ten/">https://owasp.org/www-project-top-ten/</a></li>
+</ol>
+<hr>
+<h2>30. Appendix</h2>
+<h3>30.1 Additional Diagrams</h3>
+<h4>Use Case Diagram</h4>
+<pre><code class="language-mermaid">flowchart LR
+    Guest((Guest))
+    User((Registered User))
+    Admin((Administrator))
+
+    Guest --&gt; (View Threads)
+    Guest --&gt; (Register/Login)
+    Guest --&gt; (Search)
+
+    User --&gt; (Create Thread)
+    User --&gt; (Post Comment)
+    User --&gt; (React to Content)
+    User --&gt; (Bookmark Thread)
+    User --&gt; (Follow User)
+    User --&gt; (Edit Profile)
+
+    Admin --&gt; (Delete Any Thread)
+    Admin --&gt; (Manage Categories)
+    Admin --&gt; (Suspend User)
+
+    User -.-&gt; Guest : Inherits
+    Admin -.-&gt; User : Inherits
+</code></pre>
+<h4>Activity Diagram (Creating a Thread)</h4>
+<pre><code class="language-mermaid">stateDiagram-v2
+    [*] --&gt; ClickCreateThread
+    ClickCreateThread --&gt; CheckAuth
+    CheckAuth --&gt; ShowLoginForm: Not Authenticated
+    ShowLoginForm --&gt; [*]
+    CheckAuth --&gt; ShowThreadForm: Authenticated
+    ShowThreadForm --&gt; EnterDetails
+    EnterDetails --&gt; SubmitForm
+    SubmitForm --&gt; ValidateInput
+    ValidateInput --&gt; ShowError: Invalid Data
+    ShowError --&gt; EnterDetails
+    ValidateInput --&gt; SaveToDatabase: Valid Data
+    SaveToDatabase --&gt; RedirectToThread
+    RedirectToThread --&gt; [*]
+</code></pre>
+<h4>Sequence Diagram (User Login)</h4>
+<pre><code class="language-mermaid">sequenceDiagram
+    actor User
+    participant Frontend as React App
+    participant Backend as Spring Boot API
+    participant DB as PostgreSQL Database
+
+    User-&gt;&gt;Frontend: Enters Credentials &amp; Clicks Login
+    Frontend-&gt;&gt;Backend: POST /api/auth/login {email, password}
+    Backend-&gt;&gt;DB: Query User by Email
+    DB--&gt;&gt;Backend: Returns User Record (incl. Hashed Password)
+    Backend-&gt;&gt;Backend: Compare Passwords (BCrypt)
+    alt Passwords Match
+        Backend-&gt;&gt;Backend: Generate JWT
+        Backend--&gt;&gt;Frontend: 200 OK, {token, user_info}
+        Frontend-&gt;&gt;Frontend: Store JWT &amp; Update UI State
+        Frontend--&gt;&gt;User: Redirect to Dashboard
+    else Passwords Do Not Match
+        Backend--&gt;&gt;Frontend: 401 Unauthorized
+        Frontend--&gt;&gt;User: Display Error Message
+    end
+</code></pre>
+<h4>Class Diagram (Backend Entities)</h4>
+<pre><code class="language-mermaid">classDiagram
+    class User {
+        +UUID id
+        +String username
+        +String email
+        +String password
+        +Date createdAt
+        +register()
+        +login()
+    }
+    class Thread {
+        +UUID id
+        +String title
+        +String content
+        +Date createdAt
+        +update()
+        +delete()
+    }
+    class Comment {
+        +UUID id
+        +String content
+        +Date createdAt
+    }
+    class Category {
+        +Integer id
+        +String name
+    }
+    
+    User &quot;1&quot; *-- &quot;many&quot; Thread : creates
+    User &quot;1&quot; *-- &quot;many&quot; Comment : writes
+    Category &quot;1&quot; *-- &quot;many&quot; Thread : contains
+    Thread &quot;1&quot; *-- &quot;many&quot; Comment : has
+</code></pre>
+<h4>Deployment Diagram</h4>
+<pre><code class="language-mermaid">flowchart TD
+    subgraph Client [User Devices]
+        Browser[Web Browser]
+    end
+    
+    subgraph Cloud Infrastructure
+        LB[Nginx Load Balancer]
+        subgraph App Servers
+            Node1[Spring Boot App Instance 1]
+            Node2[Spring Boot App Instance 2]
+        end
+        subgraph Database Server
+            DB[(PostgreSQL 15)]
+        end
+    end
+
+    Browser --&gt;|HTTPS| LB
+    LB --&gt; Node1
+    LB --&gt; Node2
+    Node1 --&gt;|JDBC| DB
+    Node2 --&gt;|JDBC| DB
+</code></pre>
+<h4>Data Flow Diagram (Level 0 - Context Diagram)</h4>
+<pre><code class="language-mermaid">flowchart TD
+    User((User))
+    Admin((Administrator))
+    System[ThreadHub System]
+    
+    User --&gt;|Posts, Comments, Reactions, Details| System
+    System --&gt;|Threads, Notifications, UI| User
+    
+    Admin --&gt;|Moderation Actions, Settings| System
+    System --&gt;|System Reports, User Data| Admin
+</code></pre>
+<h4>Data Flow Diagram (Level 1 - Main Processes)</h4>
+<pre><code class="language-mermaid">flowchart TD
+    User((User))
+    P1(1.0 Auth &amp; Profile)
+    P2(2.0 Thread Management)
+    P3(3.0 Interaction)
+    D1[(Users DB)]
+    D2[(Threads DB)]
+    D3[(Interactions DB)]
+
+    User --&gt;|Credentials| P1
+    P1 &lt;--&gt; D1
+    
+    User --&gt;|Thread Data| P2
+    P2 &lt;--&gt; D2
+    P2 -.-&gt; P1 : Auth Check
+    
+    User --&gt;|Comments/Reactions| P3
+    P3 &lt;--&gt; D3
+    P3 -.-&gt; P2 : Reference Thread
+</code></pre>
+<h4>Gantt Chart (Project Timeline)</h4>
+<pre><code class="language-mermaid">gantt
+    title ThreadHub Project Timeline
+    dateFormat  YYYY-MM-DD
+    section Planning
+    Requirements Gathering   :a1, 2026-08-01, 7d
+    System Design            :a2, after a1, 10d
+    section Development
+    Database Setup           :b1, after a2, 5d
+    Backend API Development  :b2, after b1, 21d
+    Frontend UI Development  :b3, after b1, 21d
+    section Testing &amp; Launch
+    Integration Testing      :c1, after b2, 7d
+    User Acceptance Testing  :c2, after c1, 7d
+    Final Deployment         :c3, after c2, 3d
+</code></pre>
+<h3>30.2 Additional Documentation Documents</h3>
+<h4>Sitemap</h4>
+<ul>
+<li><strong>/</strong> (Home / Landing Page)</li>
+<li><strong>/login</strong> (User Login)</li>
+<li><strong>/register</strong> (User Registration)</li>
+<li><strong>/dashboard</strong> (Authenticated User Feed / Trending)</li>
+<li><strong>/categories</strong> (List of all Categories)<ul>
+<li><strong>/categories/{id}</strong> (Threads within a specific Category)</li>
+</ul>
+</li>
+<li><strong>/thread/{id}</strong> (Thread Detail View &amp; Comments)</li>
+<li><strong>/thread/new</strong> (Create New Thread Form)</li>
+<li><strong>/profile/{username}</strong> (User Profile Page)<ul>
+<li><strong>/profile/settings</strong> (Profile Configuration)</li>
+</ul>
+</li>
+<li><strong>/admin/dashboard</strong> (Administrator Panel)</li>
+</ul>
+<h4>Wireframes (Text Representation)</h4>
+<p><strong>Home Page Wireframe:</strong></p>
+<pre><code class="language-text">+---------------------------------------------------------+
+| [Logo] ThreadHub    Search...      [Login] [Register]   |
++---------------------------------------------------------+
+|                                                         |
+|  +-----------------+  +------------------------------+  |
+|  | Categories      |  | Trending Threads             |  |
+|  | - Technology    |  |                              |  |
+|  | - Science       |  | 1. The Future of AI (45 cmt) |  |
+|  | - Entertainment |  | 2. Web Dev in 2026 (30 cmt)  |  |
+|  | - Gaming        |  | 3. Space Exploration (12 cmt)|  |
+|  +-----------------+  +------------------------------+  |
+|                                                         |
++---------------------------------------------------------+
+| Footer: About | Contact | Terms of Service              |
++---------------------------------------------------------+
+</code></pre>
+<p><strong>Thread Detail View Wireframe:</strong></p>
+<pre><code class="language-text">+---------------------------------------------------------+
+| [Logo] ThreadHub    Search...      [Avatar] [Profile]   |
++---------------------------------------------------------+
+| [&lt;- Back to Category]                                   |
+|                                                         |
+|  Title: The Future of AI in Software Engineering        |
+|  By: @TechGuru  |  2 hours ago                          |
+|  -----------------------------------------------------  |
+|  Content of the thread goes here. Explaining the        |
+|  various impacts of LLMs on coding...                   |
+|                                                         |
+|  [ Upvote (142) ] [ Downvote (12) ] [ Bookmark ]        |
+|  =====================================================  |
+|  Comments (45)                                          |
+|                                                         |
+|  +---------------------------------------------------+  |
+|  | [Your Avatar] [ Text area to add a comment... ]   |  |
+|  | [ Submit Comment ]                                |  |
+|  +---------------------------------------------------+  |
+|                                                         |
+|  @DevEnthusiast: Great insights! I entirely agree.      |
+|  [Reply] [Upvote(10)]                                   |
++---------------------------------------------------------+
+</code></pre>
+<h4>API Documentation (Sample Endpoints)</h4>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Description</th>
+<th>Auth Required</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/api/auth/register</code></td>
+<td>POST</td>
+<td>Register a new user</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>/api/auth/login</code></td>
+<td>POST</td>
+<td>Authenticate user &amp; receive JWT</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>/api/users/profile</code></td>
+<td>GET</td>
+<td>Retrieve user profile details</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>/api/threads</code></td>
+<td>GET</td>
+<td>Fetch list of threads (paginated)</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>/api/threads</code></td>
+<td>POST</td>
+<td>Create a new thread</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>/api/threads/{id}</code></td>
+<td>GET</td>
+<td>Retrieve a specific thread</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>/api/threads/{id}/comments</code></td>
+<td>POST</td>
+<td>Add a comment to a thread</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>/api/threads/{id}/react</code></td>
+<td>POST</td>
+<td>Add/Update reaction</td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+<h4>Database Schema (Sample SQL)</h4>
+<pre><code class="language-sql">CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT
+);
+
+CREATE TABLE threads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    author_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    category_id INT REFERENCES categories(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+</code></pre>
+<h4>Installation Guide</h4>
+<p><strong>Prerequisites:</strong> Node.js (v18+), Java JDK 17+, PostgreSQL (v15+), Maven.</p>
+<ol>
+<li><strong>Database Setup:</strong> <ul>
+<li>Create a PostgreSQL database named <code>threadhub_db</code>.</li>
+<li>Update <code>application.properties</code> in the backend folder with database credentials.</li>
+</ul>
+</li>
+<li><strong>Backend Setup:</strong><ul>
+<li>Navigate to the <code>backend</code> directory.</li>
+<li>Run <code>./mvnw spring-boot:run</code> to start the Spring Boot server on port 8080.</li>
+</ul>
+</li>
+<li><strong>Frontend Setup:</strong><ul>
+<li>Navigate to the <code>frontend</code> directory.</li>
+<li>Run <code>npm install</code> to install dependencies.</li>
+<li>Run <code>npm run dev</code> to start the Vite development server on port 5173.</li>
+</ul>
+</li>
+<li><strong>Access:</strong> Open a web browser and navigate to <code>http://localhost:5173</code>.</li>
+</ol>
+<h4>User Manual</h4>
+<ol>
+<li><strong>Registration:</strong> Click &quot;Register&quot; on the top right. Fill in your chosen username, email, and password. Submit the form.</li>
+<li><strong>Creating a Thread:</strong> Once logged in, navigate to a Category. Click the &quot;New Thread&quot; button. Provide a clear title and detailed content. Click &quot;Publish&quot;.</li>
+<li><strong>Interacting:</strong> To reply, scroll to the bottom of a thread and use the comment box. Use the Up/Down arrow icons next to posts to express your reaction.</li>
+</ol>
+<h4>Administrator Manual</h4>
+<ol>
+<li><strong>Accessing the Panel:</strong> Log in with an account possessing Admin privileges. A &quot;Admin Panel&quot; button will appear in the navigation bar.</li>
+<li><strong>Moderating Content:</strong> Within the panel, navigate to the &quot;Content&quot; tab to view reported threads or comments. Click &quot;Delete&quot; to remove violations.</li>
+<li><strong>Managing Users:</strong> Navigate to the &quot;Users&quot; tab. Search for a username to issue warnings or suspend accounts.</li>
+</ol>
+<h4>Maintenance Guide</h4>
+<ul>
+<li><strong>Database Backups:</strong> Automated pg_dump scripts should be configured via cron jobs to execute nightly, backing up to secure cloud storage.</li>
+<li><strong>Log Monitoring:</strong> Regularly review Spring Boot application logs (stored in <code>/var/logs/threadhub/</code>) for error stack traces.</li>
+<li><strong>Dependency Updates:</strong> Schedule monthly reviews of <code>package.json</code> and <code>pom.xml</code> to update libraries and patch known security vulnerabilities.</li>
+</ul>
+<h4>Risk Analysis</h4>
+<table>
+<thead>
+<tr>
+<th>Risk Identification</th>
+<th>Probability</th>
+<th>Impact</th>
+<th>Mitigation Strategy</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Server Downtime</td>
+<td>Medium</td>
+<td>High</td>
+<td>Utilise Load Balancing and auto-scaling groups to ensure redundancy.</td>
+</tr>
+<tr>
+<td>Database Data Loss</td>
+<td>Low</td>
+<td>Critical</td>
+<td>Implement automated daily backups and Point-In-Time Recovery (PITR).</td>
+</tr>
+<tr>
+<td>Security Breach (XSS/SQLi)</td>
+<td>Low</td>
+<td>Critical</td>
+<td>Strict adherence to OWASP guidelines; use parameterized queries and framework-level sanitisation.</td>
+</tr>
+<tr>
+<td>Slow UI Performance</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Implement Redis caching for trending topics; optimise frontend bundle size with lazy loading.</td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>End of Document</em></p>
+

@@ -76,7 +76,7 @@
 }
 
 .creator-card.rank-normal::before {
-  background: var(--primary-color);
+  background: var(--primary);
 }
 
 .creator-rank-badge {

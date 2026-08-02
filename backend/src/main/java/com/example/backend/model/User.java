@@ -46,6 +46,9 @@ public class User {
     @Column(name = "following_username")
     private Set<String> following = new HashSet<>();
 
+    @Transient
+    private int followerCount;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -85,4 +88,7 @@ public class User {
 
     public Set<String> getFollowing() { return following; }
     public void setFollowing(Set<String> following) { this.following = following; }
+
+    public int getFollowerCount() { return followerCount; }
+    public void setFollowerCount(int followerCount) { this.followerCount = followerCount; }
 }

@@ -5,6 +5,7 @@ import { usePosts } from '../context/PostsContext';
 import PostItem from './PostItem';
 import PostDetailsModal from './PostDetailsModal';
 import EditProfileModal from './EditProfileModal';
+import { API_URL } from '../services/api';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
@@ -18,7 +19,42 @@ const ProfilePage = () => {
     return userStr ? JSON.parse(userStr) : null;
   });
 
-  // Mock profile data for what's not in localStorage
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const response = await fetch(`${API_URL}/users/profile`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+          localStorage.setItem('user', JSON.stringify(userData));
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile stats", err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  const username = user?.username;
+  const myThreads = posts.filter(post => post.author === username);
+  const threadsCount = myThreads.length;
+  
+  let repliesCount = 0;
+  posts.forEach(post => {
+    (post.comments || []).forEach(comment => {
+      if (comment.author === username) repliesCount++;
+    });
+  });
+  
+  let likesCount = 0;
+  myThreads.forEach(post => {
+    likesCount += (post.upvotes?.length || 0);
+  });
+
   const profileData = {
     name: user?.username || 'User',
     username: `@${(user?.username || 'user').toLowerCase()}`,
@@ -27,15 +63,12 @@ const ProfilePage = () => {
     joined: 'July 2026',
     avatar: user?.profileImage || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
     stats: {
-      threads: 15,
-      replies: 42,
-      likes: 120,
-      followers: 28
+      threads: threadsCount,
+      replies: repliesCount,
+      likes: likesCount,
+      followers: user?.followerCount || 0
     }
   };
-
-  // Filter posts to simulate user's threads
-  const myThreads = posts.slice(0, 3); // Just grabbing first 3 for demo as user might not have created any
 
   const openPostModal = (post) => setSelectedPost(post);
   const closePostModal = () => setSelectedPost(null);

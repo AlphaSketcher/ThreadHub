@@ -226,7 +226,7 @@ const PostItem = ({ post, onOpenModal }) => {
                 onClick={handleFollowToggle}
                 disabled={isFollowLoading}
                 style={{
-                  background: isFollowing ? 'var(--bg-secondary)' : 'var(--primary-color)',
+                  background: isFollowing ? 'var(--bg-secondary)' : 'var(--primary)',
                   color: isFollowing ? 'var(--text-dark)' : 'white',
                   border: isFollowing ? '1px solid var(--border-color)' : 'none'
                 }}

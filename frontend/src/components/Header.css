@@ -128,7 +128,7 @@
 }
 
 .icon-btn:hover {
-  color: var(--primary-color);
+  color: var(--primary);
   transform: scale(1.1);
 }
 
@@ -231,7 +231,7 @@
 }
 
 .dropdown-header-link:hover .dropdown-view-profile {
-  color: var(--primary-color);
+  color: var(--primary);
 }
 
 .dropdown-avatar-large {
@@ -267,7 +267,7 @@
 }
 
 .dropdown-view-profile:hover {
-  color: var(--primary-color);
+  color: var(--primary);
 }
 
 .dropdown-divider {
@@ -315,7 +315,7 @@
   width: 100%;
   padding: 1rem 1.5rem;
   text-align: center;
-  color: var(--primary-color);
+  color: var(--primary);
   font-weight: 600;
   font-size: 0.95rem;
   text-decoration: none;

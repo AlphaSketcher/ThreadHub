@@ -52,6 +52,7 @@ public class UserController {
                     commentRepository.updateAvatarByAuthor(request.getProfileImage(), user.getUsername());
                 }
                 
+                user.setFollowerCount(userRepository.countFollowers(user.getUsername()));
                 userRepository.save(user);
                 return ResponseEntity.ok(user);
             }
@@ -61,6 +62,27 @@ public class UserController {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Error updating profile: " + e.getMessage() + " | Cause: " + (e.getCause() != null ? e.getCause().getMessage() : "none"));
         }
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        
+        String currentUsername = authentication.getName();
+        Optional<User> userOpt = userRepository.findByUsername(currentUsername);
+        if (userOpt.isEmpty()) {
+            userOpt = userRepository.findByEmail(currentUsername);
+        }
+        
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setFollowerCount(userRepository.countFollowers(user.getUsername()));
+            return ResponseEntity.ok(user);
+        }
+        
+        return ResponseEntity.status(404).body("User not found");
     }
 
     @PostMapping("/follow/{targetUsername}")
