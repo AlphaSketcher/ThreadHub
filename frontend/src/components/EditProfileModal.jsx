@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Camera, MapPin, FileText, Loader2 } from 'lucide-react';
+import { API_URL } from '../services/api';
 import './EditProfileModal.css';
 
 const modalVariants = {
@@ -58,7 +59,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
     
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8080/api/users/profile', {
+      const response = await fetch(`${API_URL}/users/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

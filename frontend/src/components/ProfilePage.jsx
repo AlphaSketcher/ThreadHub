@@ -22,8 +22,8 @@ const ProfilePage = () => {
   const profileData = {
     name: user?.username || 'User',
     username: `@${(user?.username || 'user').toLowerCase()}`,
-    bio: user?.bio || 'Student Developer | Passionate about building web apps and learning new technologies.',
-    location: user?.location || 'Nigeria',
+    bio: user?.bio || 'No bio added yet.',
+    location: user?.location || 'Add location',
     joined: 'July 2026',
     avatar: user?.profileImage || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
     stats: {
