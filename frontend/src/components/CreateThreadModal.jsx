@@ -23,6 +23,9 @@ const CreateThreadModal = () => {
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleTime, setScheduleTime] = useState('');
 
+  // Preview State
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
   
@@ -253,182 +256,147 @@ const CreateThreadModal = () => {
 
           {/* X-Style Write Post Section */}
           <div className="form-group" style={{marginTop: '0.5rem'}}>
-            <div className="x-editor-container">
-              <div className="x-editor-left">
-                <div className="x-avatar">
-                  <img 
-                    src={user?.profileImage || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} 
-                    alt="Profile" 
-                  />
+            {isPreviewMode ? (
+              <div className="preview-mode-container">
+                <div className="preview-mode-header">
+                  <h3>Preview</h3>
+                </div>
+                <div className="preview-content">
+                  <h3 className="preview-title">{title || 'Untitled Thread'}</h3>
+                  <p className="preview-text">{postContent || 'No content provided.'}</p>
+                  {mediaPreviews.length > 0 && (
+                    <div className={`media-preview-grid preview-count-${mediaPreviews.length}`}>
+                      {mediaPreviews.map((url, idx) => (
+                        <div key={idx} className="media-preview-item">
+                          <img src={url} alt={`Upload Preview ${idx + 1}`} className="media-preview-img" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="x-editor-right">
-                <textarea 
-                  ref={textareaRef}
-                  className="x-textarea" 
-                  placeholder="What's happening?"
-                  value={postContent}
-                  onChange={handleTextareaChange}
-                  rows={3}
-                ></textarea>
-                
-                {mediaPreviews.length > 0 && (
-                  <div className={`media-preview-grid preview-count-${mediaPreviews.length}`}>
-                    {mediaPreviews.map((url, idx) => (
-                      <div key={idx} className="media-preview-item">
-                        <img src={url} alt={`Upload Preview ${idx + 1}`} className="media-preview-img" />
-                        <button className="remove-media-btn" onClick={() => removeMedia(idx)} title="Remove image">
+            ) : (
+              <div className="x-editor-container">
+                <div className="x-editor-left">
+                  <div className="x-avatar">
+                    <img 
+                      src={user?.profileImage || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} 
+                      alt="Profile" 
+                    />
+                  </div>
+                </div>
+                <div className="x-editor-right">
+                  <textarea 
+                    ref={textareaRef}
+                    className="x-textarea" 
+                    placeholder="What's happening?"
+                    value={postContent}
+                    onChange={handleTextareaChange}
+                    rows={3}
+                  ></textarea>
+                  
+                  {mediaPreviews.length > 0 && (
+                    <div className={`media-preview-grid preview-count-${mediaPreviews.length}`}>
+                      {mediaPreviews.map((url, idx) => (
+                        <div key={idx} className="media-preview-item">
+                          <img src={url} alt={`Upload Preview ${idx + 1}`} className="media-preview-img" />
+                          <button className="remove-media-btn" onClick={() => removeMedia(idx)} title="Remove image">
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Scheduling UI */}
+                  {isScheduleOpen && (
+                    <div className="schedule-panel">
+                      <div className="schedule-panel-header">
+                        <div className="schedule-panel-title">
+                          <Calendar size={16} />
+                          <span>Schedule Post</span>
+                        </div>
+                        <button className="schedule-close-btn" onClick={() => setIsScheduleOpen(false)}>
                           <X size={16} />
                         </button>
                       </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Scheduling UI */}
-                {isScheduleOpen && (
-                  <div className="schedule-panel">
-                    <div className="schedule-panel-header">
-                      <div className="schedule-panel-title">
-                        <Calendar size={16} />
-                        <span>Schedule Post</span>
+                      <div className="schedule-inputs">
+                        <div className="schedule-input-group">
+                          <label>Date</label>
+                          <input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} />
+                        </div>
+                        <div className="schedule-input-group">
+                          <label>Time</label>
+                          <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} />
+                        </div>
                       </div>
-                      <button className="schedule-close-btn" onClick={() => setIsScheduleOpen(false)}>
-                        <X size={16} />
+                      <div className="schedule-actions">
+                        <button className="schedule-clear-btn" onClick={() => { setScheduleDate(''); setScheduleTime(''); setIsScheduleOpen(false); }}>Clear</button>
+                        <button className="schedule-confirm-btn" onClick={() => setIsScheduleOpen(false)}>Confirm</button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {(isScheduled && !isScheduleOpen) && (
+                    <div className="scheduled-indicator">
+                      <Calendar size={14} />
+                      <span>Will send on {scheduleDate} at {scheduleTime}</span>
+                      <button className="scheduled-clear" onClick={() => { setScheduleDate(''); setScheduleTime(''); }}>Clear</button>
+                    </div>
+                  )}
+                  
+                  <div className="x-toolbar">
+                    <div className="x-toolbar-left">
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        multiple
+                        ref={fileInputRef} 
+                        style={{ display: 'none' }} 
+                        onChange={handleImageUpload}
+                      />
+                      <button className="x-icon-btn" title="Media" onClick={() => fileInputRef.current?.click()}>
+                        <ImageIcon size={18} />
+                      </button>
+                      <button className="x-icon-btn gif-btn" title="GIF" onClick={() => insertAtCursor('![GIF](gif_url)')}>
+                        <span style={{fontSize: '10px', fontWeight: 'bold', border: '1px solid currentColor', borderRadius: '4px', padding: '0 2px'}}>GIF</span>
+                      </button>
+                      <button className="x-icon-btn" title="Poll" onClick={() => insertAtCursor('\n- [ ] Option 1\n- [ ] Option 2\n')}>
+                        <List size={18} />
+                      </button>
+                      <button className="x-icon-btn" onClick={() => insertAtCursor('😀')} title="Emoji">
+                        <Smile size={18} />
+                      </button>
+                      <button className={`x-icon-btn ${isScheduleOpen || isScheduled ? 'active' : ''}`} title="Schedule" onClick={() => setIsScheduleOpen(!isScheduleOpen)}>
+                        <Calendar size={18} />
+                      </button>
+                      <button className="x-icon-btn" title="Location" onClick={() => insertAtCursor(' [📍 Location] ')}>
+                        <MapPin size={18} />
                       </button>
                     </div>
-                    <div className="schedule-inputs">
-                      <div className="schedule-input-group">
-                        <label>Date</label>
-                        <input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} />
-                      </div>
-                      <div className="schedule-input-group">
-                        <label>Time</label>
-                        <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} />
-                      </div>
-                    </div>
-                    <div className="schedule-actions">
-                      <button className="schedule-clear-btn" onClick={() => { setScheduleDate(''); setScheduleTime(''); setIsScheduleOpen(false); }}>Clear</button>
-                      <button className="schedule-confirm-btn" onClick={() => setIsScheduleOpen(false)}>Confirm</button>
+                    <div className="x-toolbar-right">
+                      {/* Removed character limit ring */}
                     </div>
                   </div>
-                )}
-                
-                {(isScheduled && !isScheduleOpen) && (
-                  <div className="scheduled-indicator">
-                    <Calendar size={14} />
-                    <span>Will send on {scheduleDate} at {scheduleTime}</span>
-                    <button className="scheduled-clear" onClick={() => { setScheduleDate(''); setScheduleTime(''); }}>Clear</button>
-                  </div>
-                )}
-                
-                <div className="x-toolbar">
-                  <div className="x-toolbar-left">
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      multiple
-                      ref={fileInputRef} 
-                      style={{ display: 'none' }} 
-                      onChange={handleImageUpload}
-                    />
-                    <button className="x-icon-btn" title="Media" onClick={() => fileInputRef.current?.click()}>
-                      <ImageIcon size={18} />
-                    </button>
-                    <button className="x-icon-btn gif-btn" title="GIF" onClick={() => insertAtCursor('![GIF](gif_url)')}>
-                      <span style={{fontSize: '10px', fontWeight: 'bold', border: '1px solid currentColor', borderRadius: '4px', padding: '0 2px'}}>GIF</span>
-                    </button>
-                    <button className="x-icon-btn" title="Poll" onClick={() => insertAtCursor('\n- [ ] Option 1\n- [ ] Option 2\n')}>
-                      <List size={18} />
-                    </button>
-                    <button className="x-icon-btn" onClick={() => insertAtCursor('😀')} title="Emoji">
-                      <Smile size={18} />
-                    </button>
-                    <button className={`x-icon-btn ${isScheduleOpen || isScheduled ? 'active' : ''}`} title="Schedule" onClick={() => setIsScheduleOpen(!isScheduleOpen)}>
-                      <Calendar size={18} />
-                    </button>
-                    <button className="x-icon-btn" title="Location" onClick={() => insertAtCursor(' [📍 Location] ')}>
-                      <MapPin size={18} />
-                    </button>
-                  </div>
-                  <div className="x-toolbar-right">
-                    {/* Removed character limit ring */}
-                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Thread Options Accordion */}
-          <div className="thread-options-container">
-            <div className="thread-options-header">
-              <div className="thread-options-title">
-                <Settings size={16} />
-                <span>Thread Options</span>
-              </div>
-              <ChevronUp size={18} className="thread-options-arrow" />
-            </div>
-            <div className="thread-options-body">
-              <div className="options-grid">
-                
-                <div className="option-item">
-                  <div className="toggle-switch active">
-                    <div className="toggle-knob"></div>
-                  </div>
-                  <div className="option-text">
-                    <span className="option-label">Allow replies</span>
-                    <span className="option-desc">Let others comment on this thread</span>
-                  </div>
-                </div>
-                
-                <div className="option-item">
-                  <div className="toggle-switch inactive">
-                    <div className="toggle-knob"></div>
-                  </div>
-                  <div className="option-text">
-                    <span className="option-label">Pin thread</span>
-                    <span className="option-desc">Keep this thread at the top</span>
-                  </div>
-                </div>
-                
-                <div className="option-item">
-                  <div className="toggle-switch inactive">
-                    <div className="toggle-knob"></div>
-                  </div>
-                  <div className="option-text">
-                    <span className="option-label">Mark as question</span>
-                    <span className="option-desc">Get answers from the community</span>
-                  </div>
-                </div>
-                
-                <div className="option-item">
-                  <div className="toggle-switch inactive">
-                    <div className="toggle-knob"></div>
-                  </div>
-                  <div className="option-text">
-                    <span className="option-label">Make thread private</span>
-                    <span className="option-desc">Only visible to you and selected users</span>
-                  </div>
-                </div>
-
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
         {/* Footer */}
         <div className="modal-footer">
-          <button className="btn-secondary">
+          <button className="btn-secondary btn-attachment" onClick={() => fileInputRef.current?.click()}>
             <Paperclip size={16} />
-            Add Attachments
+            <span className="hide-on-mobile">Add Attachments</span>
           </button>
           
           <div className="footer-right-actions">
-            <button className="btn-secondary">
-              <Eye size={16} />
-              Preview
+            <button className={`btn-secondary btn-preview ${isPreviewMode ? 'active' : ''}`} onClick={() => setIsPreviewMode(!isPreviewMode)}>
+              {isPreviewMode ? <Edit2 size={16} /> : <Eye size={16} />}
+              <span className="hide-on-mobile">{isPreviewMode ? 'Edit' : 'Preview'}</span>
             </button>
-            <button className="btn-primary" onClick={handlePostSubmit}>
+            <button className="btn-primary btn-post" onClick={handlePostSubmit}>
               {isScheduled ? <Calendar size={16} /> : <Send size={16} />}
               {isScheduled ? 'Schedule' : 'Post Thread'}
             </button>
