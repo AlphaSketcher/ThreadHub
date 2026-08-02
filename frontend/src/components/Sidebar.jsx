@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { 
   Hash, Home, Compass, Grid, Bookmark, MessageSquare, Users,
   Code, Terminal, Microscope, Coffee, BookOpen, Gamepad2,
-  Trophy, Calendar, HelpCircle, Info, Mail, Edit3
+  Trophy, Calendar, HelpCircle, Info, Mail, Edit3, Star
 } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
 import { usePosts } from '../context/PostsContext';
@@ -54,9 +54,9 @@ const Sidebar = () => {
             <Home size={18} />
             <span>Home</span>
           </NavLink>
-          <NavLink to="/discover" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <Compass size={18} />
-            <span>Discover</span>
+          <NavLink to="/creators" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <Star size={18} />
+            <span>Creators</span>
           </NavLink>
           <NavLink to="/bookmarks" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Bookmark size={18} />

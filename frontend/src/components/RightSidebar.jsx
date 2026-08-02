@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Edit3, Shield, Star, Users, Terminal } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
+import { usePosts } from '../context/PostsContext';
 import './RightSidebar.css';
 
 const containerVariants = {
@@ -19,6 +20,28 @@ const itemVariants = {
 
 const RightSidebar = () => {
   const { openCreateThread } = useModal();
+  const { posts } = usePosts();
+
+  // Dynamically calculate Top Contributors
+  const contributorStats = {};
+  posts.forEach(post => {
+    if (!contributorStats[post.author]) {
+      contributorStats[post.author] = {
+        name: post.author,
+        avatar: post.avatar,
+        points: 0
+      };
+    }
+    // Let's say a post is worth 50 points, upvotes are 10 points
+    const upvotes = post.upvotes ? post.upvotes.length : 0;
+    contributorStats[post.author].points += 50 + (upvotes * 10);
+    // Keep the latest avatar
+    if (post.avatar) contributorStats[post.author].avatar = post.avatar;
+  });
+
+  const topContributors = Object.values(contributorStats)
+    .sort((a, b) => b.points - a.points)
+    .slice(0, 5);
 
   return (
     <motion.aside 
@@ -33,46 +56,29 @@ const RightSidebar = () => {
           <span className="view-all">View all</span>
         </div>
         <ul className="contributor-list">
-          <li className="contributor-item">
-            <img src="https://i.pravatar.cc/150?u=1" alt="User" className="avatar" />
-            <div className="contributor-info">
-              <h4>mister_riduro</h4>
-              <p>2.4K points</p>
-            </div>
-            <div className="rank gold"><Star size={14} /></div>
-          </li>
-          <li className="contributor-item">
-            <img src="https://i.pravatar.cc/150?u=2" alt="User" className="avatar" />
-            <div className="contributor-info">
-              <h4>code_queen</h4>
-              <p>1.8K points</p>
-            </div>
-            <div className="rank silver"><Star size={14} /></div>
-          </li>
-          <li className="contributor-item">
-            <img src="https://i.pravatar.cc/150?u=3" alt="User" className="avatar" />
-            <div className="contributor-info">
-              <h4>focus_master</h4>
-              <p>1.2K points</p>
-            </div>
-            <div className="rank bronze"><Star size={14} /></div>
-          </li>
-          <li className="contributor-item">
-            <img src="https://i.pravatar.cc/150?u=4" alt="User" className="avatar" />
-            <div className="contributor-info">
-              <h4>ai_thinker</h4>
-              <p>980 points</p>
-            </div>
-            <div className="rank normal">4</div>
-          </li>
-          <li className="contributor-item">
-            <img src="https://i.pravatar.cc/150?u=5" alt="User" className="avatar" />
-            <div className="contributor-info">
-              <h4>design_guru</h4>
-              <p>740 points</p>
-            </div>
-            <div className="rank normal">5</div>
-          </li>
+          {topContributors.length > 0 ? topContributors.map((user, index) => {
+            const isGold = index === 0;
+            const isSilver = index === 1;
+            const isBronze = index === 2;
+            const rankClass = isGold ? 'gold' : isSilver ? 'silver' : isBronze ? 'bronze' : 'normal';
+
+            return (
+              <li key={user.name} className="contributor-item">
+                <img src={user.avatar || "https://www.gravatar.com/avatar/0?d=mp"} alt={user.name} className="avatar" />
+                <div className="contributor-info">
+                  <h4>{user.name}</h4>
+                  <p>{user.points >= 1000 ? (user.points / 1000).toFixed(1) + 'K' : user.points} points</p>
+                </div>
+                <div className={`rank ${rankClass}`}>
+                  {index < 3 ? <Star size={14} /> : index + 1}
+                </div>
+              </li>
+            );
+          }) : (
+            <li className="contributor-item" style={{justifyContent: 'center', opacity: 0.7}}>
+              <p>No contributors yet.</p>
+            </li>
+          )}
         </ul>
       </motion.div>
 

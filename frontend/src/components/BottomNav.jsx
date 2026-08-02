@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Compass, Plus, Bookmark, User, LayoutGrid } from 'lucide-react';
+import { Home, Compass, Plus, Bookmark, User, LayoutGrid, Star } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
 import './BottomNav.css';
 
@@ -30,9 +30,9 @@ const BottomNav = () => {
         <Home size={22} />
         <span>Home</span>
       </div>
-      <div className={`nav-item ${isActive('/discover') ? 'active' : ''}`} onClick={() => navigate('/discover')}>
-        <Compass size={22} />
-        <span>Discover</span>
+      <div className={`nav-item ${isActive('/creators') ? 'active' : ''}`} onClick={() => navigate('/creators')}>
+        <Star size={22} />
+        <span>Creators</span>
       </div>
       
       <div className="nav-item create-btn-wrapper" onClick={handleCreateClick}>
