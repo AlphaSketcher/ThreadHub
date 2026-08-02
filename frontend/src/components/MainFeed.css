@@ -88,6 +88,8 @@
   overflow-x: auto;
   scrollbar-width: none;
   padding-bottom: 0.5rem;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
 }
 
 .trending-cards::-webkit-scrollbar {
@@ -95,9 +97,9 @@
 }
 
 .trend-card {
-  min-width: 200px;
-  height: 120px;
-  border-radius: var(--radius-md);
+  min-width: 280px;
+  height: 140px;
+  border-radius: var(--radius-lg);
   background-size: cover;
   background-position: center;
   position: relative;
@@ -105,9 +107,30 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1rem;
+  padding: 1.25rem;
   color: white;
-  flex: 1;
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.trend-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 0;
+}
+
+.trend-card:hover {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.trend-card:hover .card-overlay {
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.9) 100%);
 }
 
 .card-overlay {
@@ -154,19 +177,34 @@
 
 .scroll-btn {
   position: absolute;
-  right: -10px;
   top: 50%;
   transform: translateY(-50%);
   background-color: white;
   border: 1px solid var(--border-color);
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   z-index: 5;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-dark);
+}
+
+.scroll-btn:hover {
+  background-color: #f8fafc;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.scroll-btn.right {
+  right: -15px;
+}
+
+.scroll-btn.left {
+  left: -15px;
 }
 
 .trending-dots {
@@ -181,10 +219,13 @@
   height: 6px;
   border-radius: 50%;
   background-color: #cbd5e1;
+  transition: all 0.3s ease;
 }
 
 .trending-dots .dot.active {
   background-color: var(--primary);
+  width: 18px;
+  border-radius: 4px;
 }
 
 /* Feed Filters New */
@@ -207,6 +248,7 @@
 }
 
 .filter-pill {
+  position: relative;
   background-color: white;
   border: 1px solid var(--border-color);
   color: var(--text-muted);
@@ -217,19 +259,27 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  transition: all 0.2s;
+  transition: color 0.2s;
   white-space: nowrap;
+  cursor: pointer;
 }
 
-.filter-pill:hover {
-  background-color: #f8fafc;
+.filter-bubble {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ede9fe;
+  border-radius: 20px;
+  border: 1px solid #7c3aed;
+  z-index: 0;
 }
 
 .filter-pill.active {
-  background-color: #ede9fe;
   color: #7c3aed;
-  border-color: #ede9fe;
   font-weight: 600;
+  border-color: transparent;
 }
 
 .filter-settings-btn {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronRight, ChevronLeft, X, MessageSquare, Bookmark, CheckCircle2, MoreHorizontal, ShieldCheck, Rocket, Settings2, BarChart2, Lightbulb, HeartCrack, Reply, ThumbsUp, ThumbsDown, ChevronDown } from 'lucide-react';
@@ -35,6 +35,39 @@ const MainFeed = () => {
   const { categoryId } = useParams();
   const [selectedPost, setSelectedPost] = useState(null);
   const { posts, loading } = usePosts();
+
+  // Carousel and Filter state
+  const carouselRef = useRef(null);
+  const [activeDot, setActiveDot] = useState(0);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("For You");
+
+  const handleScroll = () => {
+    if (carouselRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+      
+      const cardWidth = 280 + 16; // 280px width + 1rem (16px) gap
+      const newIndex = Math.round(scrollLeft / cardWidth);
+      setActiveDot(Math.min(newIndex, 3));
+    }
+  };
+
+  const scrollCarousel = (direction) => {
+    if (carouselRef.current) {
+      const cardWidth = 280 + 16;
+      carouselRef.current.scrollBy({
+        left: direction === 'left' ? -cardWidth : cardWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  useEffect(() => {
+    handleScroll(); // Check initial scroll state
+  }, []);
 
   const openPostModal = (post) => setSelectedPost(post);
   const closePostModal = () => setSelectedPost(null);
@@ -83,59 +116,69 @@ const MainFeed = () => {
 
       {/* Trending Cards */}
       <motion.div variants={feedItemVariants} className="trending-cards-wrapper">
-        <div className="trending-cards">
-          <div className="trend-card" style={{backgroundImage: 'url("https://images.unsplash.com/photo-1584483766114-2cea6facdf57?q=80&w=300&auto=format&fit=crop")'}}>
-            <div className="card-overlay"></div>
-            <span className="card-tag green">Health</span>
-            <div className="card-content">
-              <h3>Does wearing mask actually effective?</h3>
-              <p>128 replies • Trending</p>
-            </div>
-          </div>
-          <div className="trend-card" style={{backgroundImage: 'url("https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=300&auto=format&fit=crop")'}}>
-            <div className="card-overlay"></div>
-            <span className="card-tag purple">Gaming</span>
-            <div className="card-content">
-              <h3>How to know that your friend is an impostor?</h3>
-              <p>96 replies • Trending</p>
-            </div>
-          </div>
-          <div className="trend-card" style={{backgroundImage: 'url("https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=300&auto=format&fit=crop")'}}>
-            <div className="card-overlay"></div>
-            <span className="card-tag red">Music</span>
-            <div className="card-content">
-              <h3>The secret behind creating a good original song.</h3>
-              <p>74 replies • Trending</p>
-            </div>
-          </div>
-          <div className="trend-card" style={{backgroundImage: 'url("https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?q=80&w=300&auto=format&fit=crop")'}}>
-            <div className="card-overlay"></div>
-            <span className="card-tag yellow">Lifestyle</span>
-            <div className="card-content">
-              <h3>How to ensure that you are not dumb?</h3>
-              <p>62 replies • Trending</p>
-            </div>
-          </div>
+        <div className="trending-cards" ref={carouselRef} onScroll={handleScroll}>
+          {[
+            { tag: "Health", color: "green", title: "Does wearing mask actually effective?", replies: 128, img: "https://images.unsplash.com/photo-1584483766114-2cea6facdf57?q=80&w=300&auto=format&fit=crop" },
+            { tag: "Gaming", color: "purple", title: "How to know that your friend is an impostor?", replies: 96, img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=300&auto=format&fit=crop" },
+            { tag: "Music", color: "red", title: "The secret behind creating a good original song.", replies: 74, img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=300&auto=format&fit=crop" },
+            { tag: "Lifestyle", color: "yellow", title: "How to ensure that you are not dumb?", replies: 62, img: "https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?q=80&w=300&auto=format&fit=crop" }
+          ].map((card, idx) => (
+            <motion.div 
+              key={idx}
+              className="trend-card" 
+              style={{backgroundImage: `url("${card.img}")`}}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="card-overlay"></div>
+              <span className={`card-tag ${card.color}`}>{card.tag}</span>
+              <div className="card-content">
+                <h3>{card.title}</h3>
+                <p>{card.replies} replies • Trending</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
-        <button className="scroll-btn right"><ChevronRight size={20} /></button>
         
-        {/* Mock pagination dots for visual completeness */}
+        {canScrollLeft && (
+          <button className="scroll-btn left" onClick={() => scrollCarousel('left')}>
+            <ChevronLeft size={20} />
+          </button>
+        )}
+        {canScrollRight && (
+          <button className="scroll-btn right" onClick={() => scrollCarousel('right')}>
+            <ChevronRight size={20} />
+          </button>
+        )}
+        
         <div className="trending-dots">
-          <span className="dot active"></span>
-          <span className="dot"></span>
-          <span className="dot"></span>
-          <span className="dot"></span>
+          {[0, 1, 2, 3].map((dot) => (
+            <span key={dot} className={`dot ${activeDot === dot ? 'active' : ''}`}></span>
+          ))}
         </div>
       </motion.div>
 
       {/* Feed Filters */}
       <motion.div variants={feedItemVariants} className="feed-filters-new">
         <div className="filter-pills-row">
-          <button className="filter-pill active"><Star size={14} className="pill-icon" /> For You</button>
-          <button className="filter-pill">Latest</button>
-          <button className="filter-pill">Most Popular</button>
-          <button className="filter-pill">Top Rated</button>
-          <button className="filter-pill">Following</button>
+          {["For You", "Latest", "Most Popular", "Top Rated", "Following"].map((filter) => (
+            <button 
+              key={filter} 
+              className={`filter-pill ${activeFilter === filter ? 'active' : ''}`}
+              onClick={() => setActiveFilter(filter)}
+            >
+              {activeFilter === filter && (
+                <motion.div
+                  layoutId="activeFilterBubble"
+                  className="filter-bubble"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              <span style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                {filter === "For You" && <Star size={14} className="pill-icon" />} {filter}
+              </span>
+            </button>
+          ))}
         </div>
         <button className="filter-settings-btn"><Settings2 size={18} /></button>
       </motion.div>
