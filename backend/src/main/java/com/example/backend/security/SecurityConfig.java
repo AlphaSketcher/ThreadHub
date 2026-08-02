@@ -91,7 +91,9 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:5173", 
             "http://172.18.103.124:5173",
-            frontendUrl
+            frontendUrl,
+            "https://threadhubb.vercel.app",
+            "https://threadhubb.vercel.app/"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));

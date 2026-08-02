@@ -1,5 +1,5 @@
-// Use the VITE_API_URL environment variable if available, otherwise default to local development URL
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+export const API_URL = import.meta.env.VITE_API_URL || (isLocal ? 'http://localhost:8080/api' : 'https://threadhub.onrender.com/api');
 
 export const authService = {
   async register(username, email, password) {
