@@ -35,8 +35,10 @@ export const PostsProvider = ({ children }) => {
       // Optimistic UI update
       setPosts(prevPosts => [newPost, ...prevPosts]);
       
-      // Save to backend
-      const savedPost = await postService.createPost(newPost);
+      // Save to backend - remove the temporary ID so Postgres can generate one
+      const postToSave = { ...newPost };
+      delete postToSave.id;
+      const savedPost = await postService.createPost(postToSave);
       
       // Update with the real ID from the backend
       setPosts(prevPosts => prevPosts.map(p => 
