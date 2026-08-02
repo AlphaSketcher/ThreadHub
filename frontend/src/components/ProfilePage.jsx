@@ -133,7 +133,7 @@ const ProfilePage = () => {
                 <div key={post.id} className="profile-thread-item" onClick={() => openPostModal(post)}>
                   <div className="pt-left">
                     <h3 className="pt-title">{post.title}</h3>
-                    <p className="pt-snippet">{post.content.substring(0, 80)}...</p>
+                    <p className="pt-snippet">{(post.snippet || '').substring(0, 80)}...</p>
                   </div>
                   <div className="pt-right">
                     <span className="pt-stat"><MessageCircle size={14} /> {post.comments?.length || Math.floor(Math.random() * 30)}</span>
