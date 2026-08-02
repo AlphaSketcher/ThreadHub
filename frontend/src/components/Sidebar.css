@@ -78,6 +78,10 @@
   margin-left: auto;
   font-size: 0.75rem;
   color: var(--text-muted);
+  font-weight: 600;
+  background-color: #f1f5f9;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
 }
 
 .sidebar-create-btn-wrapper {
@@ -111,21 +115,35 @@
 }
 
 .cat-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
 }
 
-.cat-icon.tech { background-color: #3b82f6; }
-.cat-icon.prog { background-color: #10b981; }
-.cat-icon.sci { background-color: #8b5cf6; }
-.cat-icon.life { background-color: #f59e0b; }
-.cat-icon.edu { background-color: #38bdf8; }
-.cat-icon.game { background-color: #ec4899; }
+.cat-icon::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+}
+
+.cat-icon.tech { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.cat-icon.prog { background: linear-gradient(135deg, #10b981, #047857); }
+.cat-icon.sci { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.cat-icon.life { background: linear-gradient(135deg, #f59e0b, #b45309); }
+.cat-icon.edu { background: linear-gradient(135deg, #38bdf8, #0369a1); }
+.cat-icon.game { background: linear-gradient(135deg, #ec4899, #be185d); }
+.cat-icon.others { background: linear-gradient(135deg, #64748b, #475569); }
 
 .see-all {
   font-size: 0.8rem;

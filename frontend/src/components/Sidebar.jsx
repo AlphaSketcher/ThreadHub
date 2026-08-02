@@ -7,6 +7,7 @@ import {
   Trophy, Calendar, HelpCircle, Info, Mail, Edit3
 } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
+import { usePosts } from '../context/PostsContext';
 import './Sidebar.css';
 
 const containerVariants = {
@@ -24,6 +25,7 @@ const itemVariants = {
 
 const Sidebar = () => {
   const { openCreateThread } = useModal();
+  const { posts } = usePosts();
   const navigate = useNavigate();
 
   const handleCreateClick = () => {
@@ -80,38 +82,33 @@ const Sidebar = () => {
       <motion.div variants={itemVariants} className="nav-section">
         <h3 className="section-title">CATEGORIES</h3>
         <div className="nav-list category-list">
-          <Link to="/category/technology" className="nav-item">
-            <div className="cat-icon tech"><Code size={14} /></div>
-            <span>Technology</span>
-            <span className="count">2.3K</span>
-          </Link>
-          <Link to="/category/programming" className="nav-item">
-            <div className="cat-icon prog"><Terminal size={14} /></div>
-            <span>Programming</span>
-            <span className="count">1.8K</span>
-          </Link>
-          <Link to="/category/science" className="nav-item">
-            <div className="cat-icon sci"><Microscope size={14} /></div>
-            <span>Science</span>
-            <span className="count">1.1K</span>
-          </Link>
-          <Link to="/category/lifestyle" className="nav-item">
-            <div className="cat-icon life"><Coffee size={14} /></div>
-            <span>Lifestyle</span>
-            <span className="count">987</span>
-          </Link>
-          <Link to="/category/education" className="nav-item">
-            <div className="cat-icon edu"><BookOpen size={14} /></div>
-            <span>Education</span>
-            <span className="count">1.3K</span>
-          </Link>
-          <Link to="/category/gaming" className="nav-item">
-            <div className="cat-icon game"><Gamepad2 size={14} /></div>
-            <span>Gaming</span>
-            <span className="count">743</span>
-          </Link>
+          {[
+            { id: 'Technology', name: 'Technology', icon: Code, colorClass: 'tech' },
+            { id: 'Programming', name: 'Programming', icon: Terminal, colorClass: 'prog' },
+            { id: 'Science', name: 'Science', icon: Microscope, colorClass: 'sci' },
+            { id: 'Lifestyle', name: 'Lifestyle', icon: Coffee, colorClass: 'life' },
+            { id: 'Education', name: 'Education', icon: BookOpen, colorClass: 'edu' },
+            { id: 'Gaming', name: 'Gaming', icon: Gamepad2, colorClass: 'game' },
+            { id: 'Others', name: 'Others', icon: Hash, colorClass: 'others' }
+          ].map((cat) => {
+            const Icon = cat.icon;
+            const count = posts.filter(p => p.category === cat.name).length;
+            return (
+              <NavLink 
+                key={cat.id} 
+                to={`/category/${cat.id.toLowerCase()}`} 
+                className={({ isActive }) => `nav-item category-sidebar-item ${isActive ? 'active' : ''}`}
+              >
+                <div className={`cat-icon ${cat.colorClass}`}>
+                  <Icon size={14} />
+                </div>
+                <span className="cat-name">{cat.name}</span>
+                <span className="count">{count}</span>
+              </NavLink>
+            );
+          })}
         </div>
-        <Link to="/" className="see-all" style={{display: 'block'}}>See all categories &rarr;</Link>
+        <Link to="/categories" className="see-all" style={{display: 'block'}}>See all categories &rarr;</Link>
       </motion.div>
 
       <motion.div variants={itemVariants} className="nav-section">
