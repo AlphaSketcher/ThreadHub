@@ -10,8 +10,8 @@ COPY src src
 # Make the wrapper executable
 RUN chmod +x ./gradlew
 
-# Build the application
-RUN ./gradlew bootJar -x test
+# Build the application (disable daemon and limit memory to fit in Render's 512MB free tier)
+RUN ./gradlew bootJar -x test --no-daemon -Dorg.gradle.jvmargs="-Xmx256m"
 
 # Stage 2: Run the application
 FROM eclipse-temurin:17-jre-alpine
