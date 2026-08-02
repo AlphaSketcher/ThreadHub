@@ -187,6 +187,35 @@ export const PostsProvider = ({ children }) => {
         avatar: newCommentData.avatar
       };
       
+      // OPTIMISTIC UPDATE
+      const tempId = Date.now();
+      const optimisticComment = { 
+        id: tempId, 
+        text: newCommentData.text,
+        author: newCommentData.author,
+        avatar: newCommentData.avatar,
+        time: "Just now",
+        createdAt: new Date().toISOString(),
+        helpfulCount: 0,
+        notHelpfulCount: 0,
+        helpfulVotes: [],
+        notHelpfulVotes: [],
+        replies: []
+      };
+      
+      setPosts(prevPosts => prevPosts.map(post => {
+        if (post.id === postId) {
+          const updatedComments = [...(post.comments || []), optimisticComment];
+          return {
+             ...post, 
+             comments: updatedComments,
+             discussCount: (post.discussCount || 0) + 1,
+             hasComment: true
+          };
+        }
+        return post;
+      }));
+
       // We will only do single level comments for now as the DB supports it easily
       await fetch(`${API_URL}/posts/${postId}/comments`, {
         method: 'POST',

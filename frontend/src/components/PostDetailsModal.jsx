@@ -107,6 +107,12 @@ const CommentNode = ({ comment, postId, addComment, voteComment, addNotification
               placeholder={`Replying to ${comment.author}...`}
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleReplySubmit();
+                }
+              }}
               autoFocus
             />
             <div className="reply-box-actions">
@@ -140,6 +146,7 @@ const CommentNode = ({ comment, postId, addComment, voteComment, addNotification
 
 const PostDetailsModal = ({ post, onClose }) => {
   const [mainCommentText, setMainCommentText] = useState('');
+  const commentInputRef = React.useRef(null);
 
   const { toggleBookmark, isBookmarked } = useBookmarks();
   const { toggleVote, addComment, voteComment } = usePosts();
@@ -311,7 +318,7 @@ const PostDetailsModal = ({ post, onClose }) => {
             </div>
 
             <div className="action-divider"></div>
-            <button className="action-btn-new">
+            <button className="action-btn-new" onClick={() => commentInputRef.current?.focus()}>
               <MessageSquare size={18} /> 
               <span className="action-text">
                 <span className="action-title">Discuss</span>
@@ -341,9 +348,16 @@ const PostDetailsModal = ({ post, onClose }) => {
             <img src={user ? (user.profileImage || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y") : "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"} alt="You" className="modal-comment-avatar" />
             <div className="pdm-input-wrapper">
               <textarea 
+                ref={commentInputRef}
                 placeholder="Write a comment..." 
                 value={mainCommentText}
                 onChange={(e) => setMainCommentText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    submitMainComment();
+                  }
+                }}
               />
               <div className="pdm-input-actions">
                 <button className="btn-reply-submit" onClick={submitMainComment}>Comment</button>
