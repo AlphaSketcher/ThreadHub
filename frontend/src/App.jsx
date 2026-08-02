@@ -12,6 +12,7 @@ import EditThreadModal from './components/EditThreadModal';
 import BookmarksPage from './components/BookmarksPage';
 import MyThreadsPage from './components/MyThreadsPage';
 import CategoriesPage from './components/CategoriesPage';
+import ProfilePage from './components/ProfilePage';
 import { ModalProvider } from './context/ModalContext';
 import { BookmarksProvider } from './context/BookmarksContext';
 import { PostsProvider } from './context/PostsContext';
@@ -48,6 +49,7 @@ function App() {
                   <Route path="category/:categoryId" element={<MainFeed />} />
                   <Route path="bookmarks" element={<BookmarksPage />} />
                   <Route path="my-threads" element={<MyThreadsPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
                 </Route>
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />

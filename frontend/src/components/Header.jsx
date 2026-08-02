@@ -116,7 +116,7 @@ const Header = () => {
                 </button>
                 
                 <div className="profile-dropdown">
-                  <Link to="#" className="dropdown-header dropdown-header-link">
+                  <Link to="/profile" className="dropdown-header dropdown-header-link" onClick={() => setOpenDropdown(null)}>
                     <div className="dropdown-avatar-large">
                       {user?.profileImage ? (
                         <img src={user.profileImage} alt="Profile" className="profile-img" />
