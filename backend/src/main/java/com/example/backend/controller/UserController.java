@@ -27,32 +27,37 @@ public class UserController {
 
     @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(@RequestBody ProfileUpdateRequest request, Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(401).body("Unauthorized");
-        }
-        
-        String currentUsername = authentication.getName();
-        Optional<User> userOpt = userRepository.findByUsername(currentUsername);
-        
-        if (userOpt.isEmpty()) {
-            // Check email if username not found, depending on how auth context is populated
-            userOpt = userRepository.findByEmail(currentUsername);
-        }
-
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            if (request.getBio() != null) user.setBio(request.getBio());
-            if (request.getLocation() != null) user.setLocation(request.getLocation());
-            if (request.getProfileImage() != null) {
-                user.setProfileImage(request.getProfileImage());
-                postRepository.updateAvatarByAuthor(request.getProfileImage(), user.getUsername());
-                commentRepository.updateAvatarByAuthor(request.getProfileImage(), user.getUsername());
+        try {
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(401).body("Unauthorized");
             }
             
-            userRepository.save(user);
-            return ResponseEntity.ok(user);
+            String currentUsername = authentication.getName();
+            Optional<User> userOpt = userRepository.findByUsername(currentUsername);
+            
+            if (userOpt.isEmpty()) {
+                // Check email if username not found, depending on how auth context is populated
+                userOpt = userRepository.findByEmail(currentUsername);
+            }
+
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                if (request.getBio() != null) user.setBio(request.getBio());
+                if (request.getLocation() != null) user.setLocation(request.getLocation());
+                if (request.getProfileImage() != null) {
+                    user.setProfileImage(request.getProfileImage());
+                    postRepository.updateAvatarByAuthor(request.getProfileImage(), user.getUsername());
+                    commentRepository.updateAvatarByAuthor(request.getProfileImage(), user.getUsername());
+                }
+                
+                userRepository.save(user);
+                return ResponseEntity.ok(user);
+            }
+            
+            return ResponseEntity.status(404).body("User not found");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error updating profile: " + e.getMessage() + " | Cause: " + (e.getCause() != null ? e.getCause().getMessage() : "none"));
         }
-        
-        return ResponseEntity.status(404).body("User not found");
     }
 }
