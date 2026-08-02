@@ -202,8 +202,56 @@ export const PostsProvider = ({ children }) => {
     }
   };
 
-  const voteComment = (postId, commentId, username, type) => {
-    // Left empty for now - would need a dedicated endpoint
+  const voteComment = async (postId, commentId, username, type) => {
+    try {
+      // Optimistic update
+      setPosts(prevPosts => prevPosts.map(post => {
+        if (post.id !== postId) return post;
+        
+        const updatedComments = (post.comments || []).map(comment => {
+          if (comment.id !== commentId) return comment;
+          
+          let helpfulVotes = [...(comment.helpfulVotes || [])];
+          let notHelpfulVotes = [...(comment.notHelpfulVotes || [])];
+
+          if (type === 'helpful') {
+            if (helpfulVotes.includes(username)) {
+              helpfulVotes = helpfulVotes.filter(u => u !== username);
+            } else {
+              helpfulVotes = [...helpfulVotes, username];
+              notHelpfulVotes = notHelpfulVotes.filter(u => u !== username);
+            }
+          } else if (type === 'not_helpful') {
+            if (notHelpfulVotes.includes(username)) {
+              notHelpfulVotes = notHelpfulVotes.filter(u => u !== username);
+            } else {
+              notHelpfulVotes = [...notHelpfulVotes, username];
+              helpfulVotes = helpfulVotes.filter(u => u !== username);
+            }
+          }
+          
+          return { 
+            ...comment, 
+            helpfulVotes, 
+            notHelpfulVotes,
+            helpfulCount: helpfulVotes.length,
+            notHelpfulCount: notHelpfulVotes.length 
+          };
+        });
+        
+        return { ...post, comments: updatedComments };
+      }));
+      
+      const token = localStorage.getItem('token');
+      await fetch(`${API_URL}/posts/${postId}/comments/${commentId}/vote?type=${type}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+    } catch (e) {
+      console.error("Comment vote failed", e);
+    }
   };
 
   const deletePost = async (id) => {

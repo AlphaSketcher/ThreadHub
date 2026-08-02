@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, HeartCrack, Lightbulb, Reply, MoreHorizontal, ThumbsUp, ThumbsDown, MessageSquare, Bookmark } from 'lucide-react';
 import { useBookmarks } from '../context/BookmarksContext';
 import { usePosts } from '../context/PostsContext';
 import { useNotifications } from '../context/NotificationsContext';
 import { useNavigate } from 'react-router-dom';
+import TimeDisplay from './TimeDisplay';
 import './PostDetailsModal.css';
 
 const CommentNode = ({ comment, postId, addComment, voteComment, addNotification, user, navigate, postAuthor }) => {
@@ -69,7 +70,7 @@ const CommentNode = ({ comment, postId, addComment, voteComment, addNotification
         <div className="comment-header-modal">
           <img src={comment.avatar} alt={comment.author} className="modal-comment-avatar" />
           <span className="modal-comment-author">{comment.author}</span>
-          <span className="modal-comment-time">• {comment.time}</span>
+          <span className="modal-comment-time">• <TimeDisplay timestamp={comment.createdAt || comment.time} /></span>
         </div>
         
         <p className="modal-comment-text">{comment.text}</p>
@@ -155,14 +156,14 @@ const PostDetailsModal = ({ post, onClose }) => {
   const displayVoteCount = (post.initialVoteCount || 0) + upvotes.length;
   const displayDownvoteCount = (post.initialDownvoteCount || 0) + downvotes.length;
 
-  const handleVote = (type) => {
+  const handleVote = async (type) => {
     if (!user) {
       alert("You must be logged in to vote.");
       navigate('/auth');
       return;
     }
     
-    const wasAdded = toggleVote(post.id, user.username, type);
+    const wasAdded = await toggleVote(post.id, user.username, type);
     if (wasAdded && type === 'up') {
       addNotification({
         type: 'like',
@@ -278,7 +279,7 @@ const PostDetailsModal = ({ post, onClose }) => {
             <img src={post.avatar} alt="Author" className="pdm-post-avatar" />
             <div>
               <div className="pdm-post-author">{post.author}</div>
-              <div className="pdm-post-time">{post.time} in {post.category}</div>
+              <div className="pdm-post-time"><TimeDisplay timestamp={post.createdAt || post.time} /> in {post.category}</div>
             </div>
           </div>
 

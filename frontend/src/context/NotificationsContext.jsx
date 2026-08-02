@@ -1,4 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
+import { API_URL } from '../services/api';
 
 const NotificationsContext = createContext();
 
@@ -7,61 +10,87 @@ export const useNotifications = () => {
 };
 
 export const NotificationsProvider = ({ children }) => {
-  const [notifications, setNotifications] = useState(() => {
-    const saved = localStorage.getItem('threadhub_notifications');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error("Failed to parse notifications", e);
-      }
-    }
-    return [];
-  });
+  const [notifications, setNotifications] = useState([]);
+  const [stompClient, setStompClient] = useState(null);
+
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+  const username = user ? user.username : null;
 
   useEffect(() => {
-    localStorage.setItem('threadhub_notifications', JSON.stringify(notifications));
-  }, [notifications]);
+    if (!username) return;
 
-  const addNotification = ({ type, fromUser, toUser, postId, message }) => {
-    // Only send notification if it's to another user
-    if (fromUser === toUser) return;
-    
-    // Prevent duplicate exact notifications for likes (spam prevention)
-    if (type === 'like') {
-      const isDuplicate = notifications.some(
-        n => n.type === 'like' && n.fromUser === fromUser && n.postId === postId
-      );
-      if (isDuplicate) return;
-    }
-
-    const newNotification = {
-      id: Date.now().toString(),
-      type,
-      fromUser,
-      toUser,
-      postId,
-      message,
-      read: false,
-      timestamp: new Date().toISOString()
+    // Fetch initial notifications from DB
+    const fetchNotifications = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        
+        const res = await fetch(`${API_URL}/notifications`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setNotifications(data);
+        }
+      } catch (err) {
+        console.error("Failed to load notifications", err);
+      }
     };
 
-    setNotifications(prev => [newNotification, ...prev]);
+    fetchNotifications();
+
+    // Initialize WebSocket for notifications
+    const token = localStorage.getItem('token');
+    const wsUrl = API_URL.replace('/api', '/ws');
+    
+    const client = new Client({
+      webSocketFactory: () => new SockJS(wsUrl),
+      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
+
+    client.onConnect = function () {
+      client.subscribe(`/topic/notifications/${username}`, (message) => {
+        if (message.body) {
+          try {
+            const newNotif = JSON.parse(message.body);
+            setNotifications(prev => [newNotif, ...prev]);
+          } catch (e) {
+            console.error('Error parsing notification', e);
+          }
+        }
+      });
+    };
+
+    client.activate();
+    setStompClient(client);
+
+    return () => {
+      if (client) {
+        client.deactivate();
+      }
+    };
+  }, [username]);
+
+  // addNotification is no longer needed for internal optimistic updates, 
+  // as the backend broadcasts them. We keep it empty to prevent crashes in old components.
+  const addNotification = () => {};
+
+  const markAllAsRead = async () => {
+    // In a real app, we'd have a mark-all-as-read endpoint.
+    // For now, we update local state, or loop through unread ones.
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
-  const markAllAsRead = (username) => {
-    setNotifications(prev => 
-      prev.map(n => n.toUser === username ? { ...n, read: true } : n)
-    );
+  const getUserNotifications = () => {
+    return notifications;
   };
 
-  // Filter notifications for a specific user
-  const getUserNotifications = (username) => {
-    return notifications.filter(n => n.toUser === username);
-  };
-
-  const getUnreadCount = (username) => {
-    return notifications.filter(n => n.toUser === username && !n.read).length;
+  const getUnreadCount = () => {
+    return notifications.filter(n => !n.read).length;
   };
 
   return (

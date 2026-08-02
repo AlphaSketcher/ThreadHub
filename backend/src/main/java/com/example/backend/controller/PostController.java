@@ -1,7 +1,11 @@
 package com.example.backend.controller;
 
 import com.example.backend.model.Post;
+import com.example.backend.model.User;
+import com.example.backend.model.Notification;
 import com.example.backend.repository.PostRepository;
+import com.example.backend.repository.UserRepository;
+import com.example.backend.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -17,9 +21,21 @@ public class PostController {
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private NotificationRepository notificationRepository;
     
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    private String getActualUsername() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        return userOpt.map(User::getUsername).orElse(email);
+    }
 
     @GetMapping
     public ResponseEntity<List<Post>> getAllPosts() {
@@ -29,10 +45,9 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<Post> createPost(@RequestBody Post post) {
-        // Ensure author is set from JWT if not present, though frontend sends it
-        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        String actualUsername = getActualUsername();
         if (post.getAuthor() == null || post.getAuthor().isEmpty() || post.getAuthor().equals("Guest")) {
-            post.setAuthor(currentUsername);
+            post.setAuthor(actualUsername);
         }
         
         Post savedPost = postRepository.save(post);
@@ -51,9 +66,9 @@ public class PostController {
         }
         
         // Ensure only author can delete (optional extra check)
-        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        String actualUsername = getActualUsername();
         Optional<Post> postOpt = postRepository.findById(id);
-        if (postOpt.isPresent() && !postOpt.get().getAuthor().equals(currentUsername)) {
+        if (postOpt.isPresent() && !postOpt.get().getAuthor().equals(actualUsername)) {
             return ResponseEntity.status(403).body("Not authorized to delete this post");
         }
         
@@ -74,21 +89,35 @@ public class PostController {
         }
         
         Post post = postOpt.get();
-        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        String actualUsername = getActualUsername();
         
         if ("up".equals(type)) {
-            if (post.getUpvotes().contains(currentUsername)) {
-                post.getUpvotes().remove(currentUsername);
+            if (post.getUpvotes().contains(actualUsername)) {
+                post.getUpvotes().remove(actualUsername);
             } else {
-                post.getUpvotes().add(currentUsername);
-                post.getDownvotes().remove(currentUsername);
+                post.getUpvotes().add(actualUsername);
+                post.getDownvotes().remove(actualUsername);
+                
+                // Create Notification
+                if (!post.getAuthor().equals(actualUsername)) {
+                    Notification notif = new Notification();
+                    notif.setRecipient(post.getAuthor());
+                    notif.setSender(actualUsername);
+                    notif.setType("like");
+                    notif.setMessage("@" + actualUsername + " liked your post: \"" + post.getTitle() + "\"");
+                    notif.setPostId(post.getId());
+                    Notification savedNotif = notificationRepository.save(notif);
+                    
+                    // Broadcast Notification to recipient's private channel
+                    messagingTemplate.convertAndSend("/topic/notifications/" + post.getAuthor(), savedNotif);
+                }
             }
         } else if ("down".equals(type)) {
-            if (post.getDownvotes().contains(currentUsername)) {
-                post.getDownvotes().remove(currentUsername);
+            if (post.getDownvotes().contains(actualUsername)) {
+                post.getDownvotes().remove(actualUsername);
             } else {
-                post.getDownvotes().add(currentUsername);
-                post.getUpvotes().remove(currentUsername);
+                post.getDownvotes().add(actualUsername);
+                post.getUpvotes().remove(actualUsername);
             }
         }
         

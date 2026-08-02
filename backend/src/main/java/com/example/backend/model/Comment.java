@@ -2,6 +2,8 @@ package com.example.backend.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -21,8 +23,11 @@ public class Comment {
     @Column(columnDefinition = "TEXT")
     private String text;
 
-    private int helpfulCount = 0;
-    private int notHelpfulCount = 0;
+    @ElementCollection
+    private List<String> helpfulVotes = new ArrayList<>();
+
+    @ElementCollection
+    private List<String> notHelpfulVotes = new ArrayList<>();
 
     private LocalDateTime createdAt;
 
@@ -55,11 +60,14 @@ public class Comment {
     public String getText() { return text; }
     public void setText(String text) { this.text = text; }
 
-    public int getHelpfulCount() { return helpfulCount; }
-    public void setHelpfulCount(int helpfulCount) { this.helpfulCount = helpfulCount; }
+    public int getHelpfulCount() { return helpfulVotes != null ? helpfulVotes.size() : 0; }
+    public int getNotHelpfulCount() { return notHelpfulVotes != null ? notHelpfulVotes.size() : 0; }
 
-    public int getNotHelpfulCount() { return notHelpfulCount; }
-    public void setNotHelpfulCount(int notHelpfulCount) { this.notHelpfulCount = notHelpfulCount; }
+    public List<String> getHelpfulVotes() { return helpfulVotes; }
+    public void setHelpfulVotes(List<String> helpfulVotes) { this.helpfulVotes = helpfulVotes; }
+
+    public List<String> getNotHelpfulVotes() { return notHelpfulVotes; }
+    public void setNotHelpfulVotes(List<String> notHelpfulVotes) { this.notHelpfulVotes = notHelpfulVotes; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

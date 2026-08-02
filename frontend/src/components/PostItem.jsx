@@ -6,6 +6,7 @@ import { usePosts } from '../context/PostsContext';
 import { useModal } from '../context/ModalContext';
 import { useNotifications } from '../context/NotificationsContext';
 import { useNavigate } from 'react-router-dom';
+import TimeDisplay from './TimeDisplay';
 
 const postCardVariants = {
   hidden: { opacity: 0, y: 50, scale: 0.98 },
@@ -48,14 +49,14 @@ const PostItem = ({ post, onOpenModal }) => {
 
   const categoryColor = post.categoryColor || { bg: "#f1f5f9", text: "#475569" };
 
-  const handleVote = (type) => {
+  const handleVote = async (type) => {
     if (!user) {
       alert("You must be logged in to vote.");
       navigate('/auth');
       return;
     }
     
-    const wasAdded = toggleVote(post.id, user.username, type);
+    const wasAdded = await toggleVote(post.id, user.username, type);
     
     // Only send notification on a NEW like (not removal, and not downvote)
     if (wasAdded && type === 'up') {
@@ -157,10 +158,12 @@ const PostItem = ({ post, onOpenModal }) => {
       <div className="post-meta">
         <div className="post-meta-left">
           <img src={post.avatar} alt="User" className="post-avatar" />
-          <span className="post-author">{post.author}</span>
-          {post.verified && <CheckCircle2 size={14} color="#3b82f6" className="verified-icon" />}
-          <span className="post-time">• {post.time || "Just now"}</span>
-          <span className="post-category-pill" style={{backgroundColor: categoryColor.bg, color: categoryColor.text}}>{post.category}</span>
+          <div className="post-header-info">
+            <div className="post-author">{post.author} {post.verified && <CheckCircle2 size={14} color="#3b82f6" className="verified-icon" />}</div>
+            <div className="post-time">
+              <TimeDisplay timestamp={post.createdAt || post.time} /> in <span className="post-category">{post.category}</span>
+            </div>
+          </div>
         </div>
         <div className="post-meta-right">
           <div className="orbit-wrapper">

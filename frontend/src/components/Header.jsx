@@ -4,6 +4,7 @@ import './Header.css';
 
 import { Link, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationsContext';
+import TimeDisplay from './TimeDisplay';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -52,23 +53,23 @@ const Header = () => {
               </div>
               
               <div className="user-menu-container">
-                <div className="icon-btn" onClick={() => user && markAllAsRead(user.username)}>
+                <div className="icon-btn" onClick={() => user && markAllAsRead()}>
                   <Bell size={22} />
-                  {user && getUnreadCount(user.username) > 0 && (
-                    <span className="badge">{getUnreadCount(user.username)}</span>
+                  {user && getUnreadCount() > 0 && (
+                    <span className="badge">{getUnreadCount()}</span>
                   )}
                 </div>
                 <div className="profile-dropdown">
                   <div className="dropdown-title-header">Notifications</div>
                   <div className="dropdown-divider"></div>
                   
-                  {user && getUserNotifications(user.username).length > 0 ? (
+                  {user && getUserNotifications().length > 0 ? (
                     <div className="notifications-list" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                      {getUserNotifications(user.username).map(notif => (
-                        <div key={notif.id} style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border-color)', fontSize: '0.85rem' }}>
+                      {getUserNotifications().map(notif => (
+                        <div key={notif.id} className={notif.read ? '' : 'unread-notif'} style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border-color)', fontSize: '0.85rem' }}>
                           {notif.message}
                           <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                            {new Date(notif.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            <TimeDisplay timestamp={notif.createdAt || notif.timestamp} />
                           </div>
                         </div>
                       ))}

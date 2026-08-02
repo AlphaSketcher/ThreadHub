@@ -422,3 +422,4 @@
     display: none;
   }
 }
+.unread-notif { background-color: rgba(99, 102, 241, 0.08); font-weight: 500; }
