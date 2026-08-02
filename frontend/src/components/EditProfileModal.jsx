@@ -100,7 +100,10 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
         })
       });
 
-      if (!response.ok) throw new Error('Failed to update profile');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to update profile');
+      }
       
       const updatedUser = await response.json();
       
@@ -113,7 +116,7 @@ const EditProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
       onClose();
     } catch (error) {
       console.error('Update failed:', error);
-      alert('Failed to update profile. Please try again.');
+      alert('Failed to update profile: ' + error.message);
     } finally {
       setIsSaving(false);
     }
