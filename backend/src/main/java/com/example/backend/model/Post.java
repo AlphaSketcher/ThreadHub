@@ -41,6 +41,10 @@ public class Post {
     private List<String> downvotes = new ArrayList<>();
 
     private int discussCount;
+    private boolean hasComment;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     private LocalDateTime createdAt;
 
@@ -87,6 +91,12 @@ public class Post {
 
     public int getDiscussCount() { return discussCount; }
     public void setDiscussCount(int discussCount) { this.discussCount = discussCount; }
+
+    public boolean isHasComment() { return hasComment; }
+    public void setHasComment(boolean hasComment) { this.hasComment = hasComment; }
+
+    public List<Comment> getComments() { return comments; }
+    public void setComments(List<Comment> comments) { this.comments = comments; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

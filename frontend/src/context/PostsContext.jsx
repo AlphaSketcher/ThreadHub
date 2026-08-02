@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { postService } from '../services/api';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
+import { API_URL } from '../services/api';
 
 const PostsContext = createContext();
 
@@ -10,43 +13,118 @@ export const usePosts = () => {
 export const PostsProvider = ({ children }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [stompClient, setStompClient] = useState(null);
 
+  // Load initial data and connect WebSocket
   useEffect(() => {
-    const loadPosts = async () => {
+    let client;
+    
+    const initialize = async () => {
       try {
+        setLoading(true);
+        // Load initial posts from the actual database
         const data = await postService.fetchPosts();
-        if (data && data.length > 0) {
+        if (data) {
           setPosts(data);
         } else {
-          setPosts(initialPostsData); // Fallback to dummy data if DB is empty
+          setPosts([]);
         }
       } catch (err) {
-        console.error("Failed to load posts from API, falling back to dummy data", err);
-        setPosts(initialPostsData);
+        console.error("Failed to load posts from API", err);
+        setPosts([]);
       } finally {
         setLoading(false);
       }
+
+      // Initialize WebSocket connection
+      const token = localStorage.getItem('token');
+      
+      // Determine ws url from API_URL (replace /api with /ws)
+      const wsUrl = API_URL.replace('/api', '/ws');
+      
+      client = new Client({
+        webSocketFactory: () => new SockJS(wsUrl),
+        connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+        debug: function (str) {
+          // console.log(str);
+        },
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+      });
+
+      client.onConnect = function (frame) {
+        // Subscribe to public posts topic
+        client.subscribe('/topic/posts', (message) => {
+          if (message.body) {
+            try {
+              const parsed = JSON.parse(message.body);
+              handleRealtimeEvent(parsed);
+            } catch (e) {
+              console.error('Error parsing STOMP message', e);
+            }
+          }
+        });
+      };
+
+      client.onStompError = function (frame) {
+        console.error('Broker reported error: ' + frame.headers['message']);
+        console.error('Additional details: ' + frame.body);
+      };
+
+      client.activate();
+      setStompClient(client);
     };
-    loadPosts();
+
+    initialize();
+
+    return () => {
+      if (client) {
+        client.deactivate();
+      }
+    };
   }, []);
+
+  const handleRealtimeEvent = (event) => {
+    const { type, payload } = event;
+    
+    switch (type) {
+      case 'POST_CREATED':
+        setPosts((prev) => {
+          // Prevent duplicates
+          if (prev.some(p => p.id === payload.id)) return prev;
+          return [payload, ...prev];
+        });
+        break;
+      case 'POST_UPDATED':
+        setPosts((prev) => prev.map(p => p.id === payload.id ? payload : p));
+        break;
+      case 'POST_DELETED':
+        setPosts((prev) => prev.filter(p => p.id !== payload));
+        break;
+      default:
+        break;
+    }
+  };
 
   const addPost = async (newPost) => {
     try {
-      // Optimistic UI update
-      setPosts(prevPosts => [newPost, ...prevPosts]);
+      // Create post via REST - websocket will broadcast the update back to us
+      // We can also do optimistic UI
+      const tempId = Date.now();
+      const optimisticPost = { ...newPost, id: tempId };
+      setPosts(prev => [optimisticPost, ...prev]);
       
-      // Save to backend - remove the temporary ID so Postgres can generate one
       const postToSave = { ...newPost };
-      delete postToSave.id;
+      delete postToSave.id; // ensure ID is empty for DB
+      
       const savedPost = await postService.createPost(postToSave);
       
-      // Update with the real ID from the backend
-      setPosts(prevPosts => prevPosts.map(p => 
-        p.id === newPost.id ? savedPost : p
-      ));
+      // Update temp id with real id (though websocket will also push the real one, 
+      // we remove the temp one to prevent duplicates)
+      setPosts(prev => prev.filter(p => p.id !== tempId));
     } catch (err) {
       console.error("Failed to save post to backend", err);
-      // We might want to remove it from UI if it failed, but keeping it simple for now
     }
   };
 
@@ -56,245 +134,110 @@ export const PostsProvider = ({ children }) => {
     ));
   };
 
-  const toggleVote = (id, username, type) => {
-    let wasAdded = false;
-    setPosts(prevPosts => prevPosts.map(post => {
-      if (post.id !== id) return post;
-      
-      let upvotes = post.upvotes || [];
-      let downvotes = post.downvotes || [];
+  const toggleVote = async (id, username, type) => {
+    try {
+      // Optimistic update
+      let wasAdded = false;
+      setPosts(prevPosts => prevPosts.map(post => {
+        if (post.id !== id) return post;
+        
+        let upvotes = [...(post.upvotes || [])];
+        let downvotes = [...(post.downvotes || [])];
 
-      if (type === 'up') {
-        if (upvotes.includes(username)) {
-          // Remove upvote
-          upvotes = upvotes.filter(u => u !== username);
-        } else {
-          // Add upvote, remove downvote if exists
-          upvotes = [...upvotes, username];
-          downvotes = downvotes.filter(u => u !== username);
-          wasAdded = true;
+        if (type === 'up') {
+          if (upvotes.includes(username)) {
+            upvotes = upvotes.filter(u => u !== username);
+          } else {
+            upvotes = [...upvotes, username];
+            downvotes = downvotes.filter(u => u !== username);
+            wasAdded = true;
+          }
+        } else if (type === 'down') {
+          if (downvotes.includes(username)) {
+            downvotes = downvotes.filter(u => u !== username);
+          } else {
+            downvotes = [...downvotes, username];
+            upvotes = upvotes.filter(u => u !== username);
+            wasAdded = true;
+          }
         }
-      } else if (type === 'down') {
-        if (downvotes.includes(username)) {
-          // Remove downvote
-          downvotes = downvotes.filter(u => u !== username);
-        } else {
-          // Add downvote, remove upvote if exists
-          downvotes = [...downvotes, username];
-          upvotes = upvotes.filter(u => u !== username);
-          wasAdded = true;
-        }
-      }
-
-      return { ...post, upvotes, downvotes };
-    }));
-    return wasAdded;
-  };
-
-  // Helper to recursively find and update a comment
-  const recursivelyUpdateComment = (comments, commentId, updateFn) => {
-    if (!comments) return [];
-    return comments.map(comment => {
-      if (comment.id === commentId) {
-        return updateFn(comment);
-      }
-      if (comment.replies && comment.replies.length > 0) {
-        return { ...comment, replies: recursivelyUpdateComment(comment.replies, commentId, updateFn) };
-      }
-      return comment;
-    });
-  };
-
-  const addComment = (postId, parentCommentId, newCommentData) => {
-    setPosts(prevPosts => prevPosts.map(post => {
-      if (post.id !== postId) return post;
+        return { ...post, upvotes, downvotes };
+      }));
       
-      const newComment = {
-        id: Date.now(), // Generate a unique ID
-        ...newCommentData,
-        helpfulVotes: [],
-        notHelpfulVotes: [],
-        helpfulCount: 0,
-        notHelpfulCount: 0,
-        replies: []
-      };
-
-      if (!parentCommentId) {
-        // Top-level comment
-        return { 
-          ...post, 
-          comments: [...(post.comments || []), newComment],
-          discussCount: (post.discussCount || 0) + 1
-        };
-      }
-
-      // Nested reply
-      const updatedComments = recursivelyUpdateComment(post.comments, parentCommentId, (parentComment) => {
-        return { ...parentComment, replies: [...(parentComment.replies || []), newComment] };
+      // Call REST API
+      const token = localStorage.getItem('token');
+      await fetch(`${API_URL}/posts/${id}/vote?type=${type}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
+      
+      return wasAdded;
+    } catch (e) {
+      console.error("Vote failed", e);
+      return false;
+    }
+  };
 
-      return { 
-        ...post, 
-        comments: updatedComments,
-        discussCount: (post.discussCount || 0) + 1
+  const addComment = async (postId, parentCommentId, newCommentData) => {
+    try {
+      const token = localStorage.getItem('token');
+      const commentPayload = {
+        text: newCommentData.text,
+        author: newCommentData.author,
+        avatar: newCommentData.avatar
       };
-    }));
+      
+      // We will only do single level comments for now as the DB supports it easily
+      await fetch(`${API_URL}/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(commentPayload)
+      });
+      // The websocket will broadcast the updated post, so UI updates automatically!
+    } catch (err) {
+      console.error("Failed to add comment", err);
+    }
   };
 
   const voteComment = (postId, commentId, username, type) => {
-    setPosts(prevPosts => prevPosts.map(post => {
-      if (post.id !== postId) return post;
-
-      const updatedComments = recursivelyUpdateComment(post.comments, commentId, (comment) => {
-        let helpfulVotes = comment.helpfulVotes || [];
-        let notHelpfulVotes = comment.notHelpfulVotes || [];
-
-        if (type === 'helpful') {
-          if (helpfulVotes.includes(username)) {
-            helpfulVotes = helpfulVotes.filter(u => u !== username);
-          } else {
-            helpfulVotes = [...helpfulVotes, username];
-            notHelpfulVotes = notHelpfulVotes.filter(u => u !== username);
-          }
-        } else if (type === 'not-helpful') {
-          if (notHelpfulVotes.includes(username)) {
-            notHelpfulVotes = notHelpfulVotes.filter(u => u !== username);
-          } else {
-            notHelpfulVotes = [...notHelpfulVotes, username];
-            helpfulVotes = helpfulVotes.filter(u => u !== username);
-          }
-        }
-
-        return { ...comment, helpfulVotes, notHelpfulVotes };
-      });
-
-      return { ...post, comments: updatedComments };
-    }));
+    // Left empty for now - would need a dedicated endpoint
   };
 
-  const deletePost = (id) => {
-    setPosts(prevPosts => prevPosts.filter(post => post.id !== id));
+  const deletePost = async (id) => {
+    try {
+      // Optimistic delete
+      setPosts(prevPosts => prevPosts.filter(post => post.id !== id));
+      
+      const token = localStorage.getItem('token');
+      await fetch(`${API_URL}/posts/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+    } catch (e) {
+      console.error("Delete failed", e);
+    }
   };
 
   return (
-    <PostsContext.Provider value={{ posts, setPosts, addPost, updatePost, deletePost, toggleVote, addComment, voteComment }}>
+    <PostsContext.Provider value={{ 
+      posts, 
+      loading,
+      setPosts, 
+      addPost, 
+      updatePost, 
+      deletePost, 
+      toggleVote, 
+      addComment, 
+      voteComment 
+    }}>
       {children}
     </PostsContext.Provider>
   );
 };
-
-const initialPostsData = [
-  {
-    id: 1,
-    author: "mister_riduro",
-    avatar: "https://i.pravatar.cc/150?u=1",
-    verified: true,
-    time: "3h ago",
-    category: "Technology",
-    categoryColor: { bg: "#ede9fe", text: "#7c3aed" },
-    title: "Can we survive this pandemic?",
-    hasShield: true,
-    snippet: "This coronavirus or covid-19 has been a really terrifying ghost for everybody in the world for this 6 months. The outbreak was started in Wuhan at January, and till now we are still in the middle of it.",
-    images: ["https://images.unsplash.com/photo-1584483766114-2cea6facdf57?q=80&w=1000&auto=format&fit=crop"],
-    tags: ["Pandemic", "COVID-19", "Health", "Global"],
-    initialVoteCount: 32,
-    initialDownvoteCount: 7,
-    upvotes: [],
-    downvotes: [],
-    discussCount: 128,
-    hasComment: true,
-    comments: [
-      {
-        id: 101,
-        author: "code_queen",
-        avatar: "https://i.pravatar.cc/150?u=2",
-        time: "2h ago",
-        text: "Great points! Stay safe everyone. It's really important that we keep our masks on.",
-        helpfulCount: 15,
-        notHelpfulCount: 2,
-        replies: [
-          {
-            id: 102,
-            author: "health_nut",
-            avatar: "https://i.pravatar.cc/150?u=8",
-            time: "1h ago",
-            text: "Absolutely. I've been double masking when I go to crowded places.",
-            helpfulCount: 8,
-            notHelpfulCount: 0,
-            replies: [
-              {
-                id: 103,
-                author: "skeptic_pete",
-                avatar: "https://i.pravatar.cc/150?u=9",
-                time: "45m ago",
-                text: "Isn't double masking a bit overkill though?",
-                helpfulCount: 2,
-                notHelpfulCount: 12,
-                replies: []
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: 3,
-    author: "design_guru",
-    avatar: "https://i.pravatar.cc/150?u=4",
-    verified: true,
-    time: "4h ago",
-    category: "Design",
-    categoryColor: { bg: "#fce7f3", text: "#db2777" },
-    title: "My latest UI exploration for a modern dashboard",
-    hasShield: false,
-    snippet: "Spent the weekend playing around with glassmorphism and soft shadows. What do you think of this layout? The multi-image grid is finally coming together nicely!",
-    images: [
-      "https://images.unsplash.com/photo-1618761714954-0b8cd0026356?q=80&w=1000&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=1000&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=1000&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1000&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1000&auto=format&fit=crop"
-    ],
-    tags: ["UI/UX", "Dashboard", "Design", "Glassmorphism"],
-    initialVoteCount: 156,
-    initialDownvoteCount: 3,
-    upvotes: [],
-    downvotes: [],
-    discussCount: 89,
-    hasComment: true,
-    comments: [
-      {
-        id: 201,
-        author: "pixel_pusher",
-        avatar: "https://i.pravatar.cc/150?u=12",
-        time: "3h ago",
-        text: "The glassmorphism effect is super clean! What CSS blur values did you use?",
-        helpfulCount: 24,
-        notHelpfulCount: 0,
-        replies: []
-      }
-    ]
-  },
-  {
-    id: 2,
-    author: "ai_thinker",
-    avatar: "https://i.pravatar.cc/150?u=3",
-    verified: true,
-    time: "5h ago",
-    category: "Programming",
-    categoryColor: { bg: "#e0f2fe", text: "#0284c7" },
-    title: "Best programming languages to learn in 2024",
-    hasShield: false,
-    snippet: "As a beginner developer, I'm confused about which programming language to start with. What do you guys recommend and why?",
-    images: [],
-    tags: [],
-    initialVoteCount: 24,
-    initialDownvoteCount: 2,
-    upvotes: [],
-    downvotes: [],
-    discussCount: 42,
-    hasComment: false,
-    comments: []
-  }
-];

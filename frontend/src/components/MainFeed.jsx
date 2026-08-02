@@ -34,7 +34,7 @@ const postCardVariants = {
 const MainFeed = () => {
   const { categoryId } = useParams();
   const [selectedPost, setSelectedPost] = useState(null);
-  const { posts } = usePosts();
+  const { posts, loading } = usePosts();
 
   const openPostModal = (post) => setSelectedPost(post);
   const closePostModal = () => setSelectedPost(null);
@@ -43,6 +43,15 @@ const MainFeed = () => {
   const displayedPosts = categoryId 
     ? posts.filter(post => post.category?.toLowerCase() === categoryId.toLowerCase())
     : posts;
+
+  if (loading) {
+    return (
+      <main className="main-feed" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid rgba(0,0,0,0.1)', borderTopColor: 'var(--primary-color)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </main>
+    );
+  }
 
   return (
     <motion.main 
