@@ -115,7 +115,7 @@ const Sidebar = () => {
             <span className="count">743</span>
           </Link>
         </div>
-        <Link to="/categories" className="see-all" style={{display: 'block'}}>See all categories &rarr;</Link>
+        <Link to="/" className="see-all" style={{display: 'block'}}>See all categories &rarr;</Link>
       </motion.div>
 
       <motion.div variants={itemVariants} className="nav-section">

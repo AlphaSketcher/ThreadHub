@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronRight, ChevronLeft, X, MessageSquare, Bookmark, CheckCircle2, MoreHorizontal, ShieldCheck, Rocket, Settings2, BarChart2, Lightbulb, HeartCrack, Reply, ThumbsUp, ThumbsDown, ChevronDown } from 'lucide-react';
 import PostDetailsModal from './PostDetailsModal';
@@ -31,11 +32,17 @@ const postCardVariants = {
 };
 
 const MainFeed = () => {
+  const { categoryId } = useParams();
   const [selectedPost, setSelectedPost] = useState(null);
   const { posts } = usePosts();
 
   const openPostModal = (post) => setSelectedPost(post);
   const closePostModal = () => setSelectedPost(null);
+
+  // Filter posts if viewing a specific category
+  const displayedPosts = categoryId 
+    ? posts.filter(post => post.category?.toLowerCase() === categoryId.toLowerCase())
+    : posts;
 
   return (
     <motion.main 
@@ -45,15 +52,25 @@ const MainFeed = () => {
       animate="show"
     >
       {/* Hero Banner */}
-      <motion.div variants={feedItemVariants} className="hero-banner">
-        <h2 className="hero-welcome">Welcome to ThreadHub 👋</h2>
-        <h1 className="hero-title">Share ideas. Start conversations.<br/>Connect with the world.</h1>
-        <p className="hero-subtitle">Be part of meaningful discussions on anything that matters.</p>
-        <div className="hero-actions">
-          <button className="btn-explore">Explore Trending <ArrowRight size={16} /></button>
-          <button className="btn-categories">Explore Categories</button>
-        </div>
-      </motion.div>
+      {!categoryId && (
+        <motion.div variants={feedItemVariants} className="hero-banner">
+          <h2 className="hero-welcome">Welcome to ThreadHub 👋</h2>
+          <h1 className="hero-title">Share ideas. Start conversations.<br/>Connect with the world.</h1>
+          <p className="hero-subtitle">Be part of meaningful discussions on anything that matters.</p>
+          <div className="hero-actions">
+            <button className="btn-explore">Explore Trending <ArrowRight size={16} /></button>
+            <button className="btn-categories">Explore Categories</button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Category Header */}
+      {categoryId && (
+        <motion.div variants={feedItemVariants} className="category-header" style={{marginBottom: '24px', padding: '0 20px'}}>
+          <h2 style={{textTransform: 'capitalize', fontSize: '24px', color: 'var(--text-main)'}}>{categoryId} Threads</h2>
+          <p style={{color: 'var(--text-muted)'}}>Explore discussions about {categoryId}.</p>
+        </motion.div>
+      )}
 
       {/* Trending Cards */}
       <motion.div variants={feedItemVariants} className="trending-cards-wrapper">
@@ -116,9 +133,15 @@ const MainFeed = () => {
 
       {/* Posts List */}
       <div className="post-list">
-        {posts.map(post => (
-          <PostItem key={post.id} post={post} onOpenModal={() => openPostModal(post)} />
-        ))}
+        {displayedPosts.length > 0 ? (
+          displayedPosts.map(post => (
+            <PostItem key={post.id} post={post} onOpenModal={() => openPostModal(post)} />
+          ))
+        ) : (
+          <div style={{padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)'}}>
+            No posts found in this category yet. Be the first to start a thread!
+          </div>
+        )}
       </div>
 
       <AnimatePresence>

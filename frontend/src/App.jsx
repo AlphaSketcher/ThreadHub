@@ -42,6 +42,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<MainLayout />}>
                   <Route index element={<MainFeed />} />
+                  <Route path="category/:categoryId" element={<MainFeed />} />
                   <Route path="bookmarks" element={<BookmarksPage />} />
                   <Route path="my-threads" element={<MyThreadsPage />} />
                 </Route>
