@@ -6,6 +6,7 @@ import { usePosts } from '../context/PostsContext';
 import { useModal } from '../context/ModalContext';
 import { useNotifications } from '../context/NotificationsContext';
 import { useNavigate } from 'react-router-dom';
+import { userService } from '../services/api';
 import TimeDisplay from './TimeDisplay';
 
 const postCardVariants = {
@@ -31,10 +32,59 @@ const PostItem = ({ post, onOpenModal }) => {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Check if current user is author
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
   const isAuthor = user && user.username === post.author;
+  
+  const [isFollowing, setIsFollowing] = useState(user?.following?.includes(post.author) || false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+
+  useEffect(() => {
+    const handleUserUpdate = () => {
+      const updatedUserStr = localStorage.getItem('user');
+      const updatedUser = updatedUserStr ? JSON.parse(updatedUserStr) : null;
+      if (updatedUser) {
+        setIsFollowing(updatedUser.following?.includes(post.author) || false);
+      }
+    };
+    window.addEventListener('userUpdated', handleUserUpdate);
+    return () => window.removeEventListener('userUpdated', handleUserUpdate);
+  }, [post.author]);
+
+  const handleFollowToggle = async () => {
+    if (!user) {
+      alert("You must be logged in to follow.");
+      navigate('/auth');
+      return;
+    }
+    
+    try {
+      setIsFollowLoading(true);
+      const updatedFollowing = await userService.toggleFollow(post.author);
+      
+      // Update local storage
+      const updatedUser = { ...user, following: updatedFollowing };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      window.dispatchEvent(new Event('userUpdated'));
+      
+      const newlyFollowed = updatedFollowing.includes(post.author);
+      setIsFollowing(newlyFollowed);
+      
+      if (newlyFollowed) {
+        addNotification({
+          type: 'follow',
+          fromUser: user.username,
+          toUser: post.author,
+          postId: null,
+          message: `@${user.username} started following you!`
+        });
+      }
+    } catch (err) {
+      console.error("Failed to toggle follow", err);
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
 
   // Use the freshest avatar for the current user's posts
   const displayAvatar = isAuthor && user.profileImage ? user.profileImage : (post.avatar || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y');
@@ -169,16 +219,28 @@ const PostItem = ({ post, onOpenModal }) => {
           </div>
         </div>
         <div className="post-meta-right">
-          <div className="orbit-wrapper">
-            <button className="orbit-btn"><Rocket size={14} /> Orbit</button>
-            <div className="orbit-tooltip">
-              <div className="tooltip-header">
-                <h4>Orbit this user</h4>
-                <span className="close-tooltip">×</span>
+          {!isAuthor && (
+            <div className="orbit-wrapper">
+              <button 
+                className={`orbit-btn ${isFollowing ? 'following' : ''}`}
+                onClick={handleFollowToggle}
+                disabled={isFollowLoading}
+                style={{
+                  background: isFollowing ? 'var(--bg-secondary)' : 'var(--primary-color)',
+                  color: isFollowing ? 'var(--text-dark)' : 'white',
+                  border: isFollowing ? '1px solid var(--border-color)' : 'none'
+                }}
+              >
+                {isFollowLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
+              </button>
+              <div className="orbit-tooltip">
+                <div className="tooltip-header">
+                  <h4>{isFollowing ? 'Unfollow' : 'Follow'} {post.author}</h4>
+                </div>
+                <p>{isFollowing ? 'Stop seeing their posts in your following feed.' : 'See their threads appear in your following feed.'}</p>
               </div>
-              <p>See their threads appear in your orbit feed.</p>
             </div>
-          </div>
+          )}
           
           <div className="post-options-wrapper" style={{ position: 'relative' }}>
             <button 

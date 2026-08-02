@@ -14,6 +14,7 @@ import MyThreadsPage from './components/MyThreadsPage';
 import CategoriesPage from './components/CategoriesPage';
 import CreatorsPage from './components/CreatorsPage';
 import ProfilePage from './components/ProfilePage';
+import FollowingPage from './components/FollowingPage';
 import { ModalProvider } from './context/ModalContext';
 import { BookmarksProvider } from './context/BookmarksContext';
 import { PostsProvider } from './context/PostsContext';
@@ -51,6 +52,7 @@ function App() {
                   <Route path="bookmarks" element={<BookmarksPage />} />
                   <Route path="my-threads" element={<MyThreadsPage />} />
                   <Route path="profile" element={<ProfilePage />} />
+                  <Route path="following" element={<FollowingPage />} />
                 </Route>
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />

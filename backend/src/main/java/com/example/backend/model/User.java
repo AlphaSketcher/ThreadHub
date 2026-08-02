@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -38,6 +40,11 @@ public class User {
 
     @Column(columnDefinition = "TEXT")
     private String profileImage;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_following", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "following_username")
+    private Set<String> following = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {
@@ -75,4 +82,7 @@ public class User {
 
     public String getProfileImage() { return profileImage; }
     public void setProfileImage(String profileImage) { this.profileImage = profileImage; }
+
+    public Set<String> getFollowing() { return following; }
+    public void setFollowing(Set<String> following) { this.following = following; }
 }

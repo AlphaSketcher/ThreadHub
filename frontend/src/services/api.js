@@ -65,3 +65,29 @@ export const postService = {
     return await response.json();
   }
 };
+
+export const userService = {
+  async toggleFollow(targetUsername) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/users/follow/${targetUsername}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!response.ok) throw new Error('Failed to toggle follow');
+    return await response.json(); // Returns updated following list
+  },
+
+  async getFollowing() {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/users/following`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch following');
+    return await response.json();
+  }
+};
