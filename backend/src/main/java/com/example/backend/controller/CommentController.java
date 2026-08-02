@@ -56,7 +56,9 @@ public class CommentController {
         }
         
         comment.setPost(post);
-        commentRepository.save(comment);
+        Comment savedComment = commentRepository.save(comment);
+        
+        post.getComments().add(savedComment);
         
         post.setHasComment(true);
         post.setDiscussCount(post.getDiscussCount() + 1);
@@ -71,7 +73,8 @@ public class CommentController {
             notif.setRecipient(post.getAuthor());
             notif.setSender(actualUsername);
             notif.setType("comment");
-            String truncatedComment = comment.getText().length() > 30 ? comment.getText().substring(0, 30) + "..." : comment.getText();
+            String cText = comment.getText() != null ? comment.getText() : "";
+            String truncatedComment = cText.length() > 30 ? cText.substring(0, 30) + "..." : cText;
             notif.setMessage("@" + actualUsername + " commented on your post: \"" + truncatedComment + "\"");
             notif.setPostId(post.getId());
             Notification savedNotif = notificationRepository.save(notif);

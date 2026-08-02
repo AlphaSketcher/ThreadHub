@@ -30,7 +30,7 @@ const BottomNav = () => {
         <Home size={22} />
         <span>Home</span>
       </div>
-      <div className={`nav-item ${isActive('/category/popular') ? 'active' : ''}`} onClick={() => navigate('/category/popular')}>
+      <div className={`nav-item ${isActive('/discover') ? 'active' : ''}`} onClick={() => navigate('/discover')}>
         <Compass size={22} />
         <span>Discover</span>
       </div>
