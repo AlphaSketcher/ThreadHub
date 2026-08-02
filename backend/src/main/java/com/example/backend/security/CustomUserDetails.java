@@ -8,16 +8,35 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
-public class CustomUserDetails implements UserDetails {
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import java.util.Map;
+
+public class CustomUserDetails implements UserDetails, OAuth2User {
 
     private User user;
+    private Map<String, Object> attributes;
 
     public CustomUserDetails(User user) {
         this.user = user;
     }
 
+    public CustomUserDetails(User user, Map<String, Object> attributes) {
+        this.user = user;
+        this.attributes = attributes;
+    }
+
     public User getUser() {
         return user;
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public String getName() {
+        return user.getEmail();
     }
 
     @Override

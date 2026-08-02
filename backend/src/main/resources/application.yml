@@ -35,6 +35,11 @@ spring:
               - email
               - profile
 
+# Custom Application Properties
+app:
+  # The URL of the frontend for OAuth2 redirect. Override in production (e.g. Vercel URL)
+  frontend-url: ${VITE_FRONTEND_URL:http://localhost:5173}
+
 # Custom JWT properties
 jwt:
   # Secret key (should be at least 256 bits). In production, inject via env variables.

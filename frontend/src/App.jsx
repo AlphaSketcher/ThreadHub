@@ -5,6 +5,7 @@ import Header from './components/Header';
 import MainFeed from './components/MainFeed';
 import RightSidebar from './components/RightSidebar';
 import Auth from './components/Auth';
+import OAuth2RedirectHandler from './components/OAuth2RedirectHandler';
 import BottomNav from './components/BottomNav';
 import CreateThreadModal from './components/CreateThreadModal';
 import EditThreadModal from './components/EditThreadModal';
@@ -45,6 +46,7 @@ function App() {
                   <Route path="my-threads" element={<MyThreadsPage />} />
                 </Route>
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
               </Routes>
               <CreateThreadModal />
               <EditThreadModal />
