@@ -217,7 +217,7 @@ export const PostsProvider = ({ children }) => {
       }));
 
       // We will only do single level comments for now as the DB supports it easily
-      await fetch(`${API_URL}/posts/${postId}/comments`, {
+      const response = await fetch(`${API_URL}/posts/${postId}/comments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -225,7 +225,27 @@ export const PostsProvider = ({ children }) => {
         },
         body: JSON.stringify(commentPayload)
       });
-      // The websocket will broadcast the updated post, so UI updates automatically!
+      
+      if (!response.ok) {
+         if (response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            alert('Your session has expired. Please log in again.');
+            window.location.href = '/auth';
+            return;
+         }
+         const errorText = await response.text();
+         alert(`Failed to post comment: ${errorText}`);
+         console.error("Backend error when saving comment", errorText);
+         // Rollback optimistic update
+         setPosts(prevPosts => prevPosts.map(post => {
+           if (post.id === postId) {
+             return { ...post, comments: post.comments.filter(c => c.id !== tempId), discussCount: Math.max(0, post.discussCount - 1) };
+           }
+           return post;
+         }));
+      }
+      // The websocket will broadcast the updated post, so UI updates automatically if successful!
     } catch (err) {
       console.error("Failed to add comment", err);
     }
