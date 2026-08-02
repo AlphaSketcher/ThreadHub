@@ -44,13 +44,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOrigins(
-                    "http://localhost:5173", 
-                    "http://172.18.103.124:5173",
-                    frontendUrl,
-                    "https://threadhubb.vercel.app",
-                    "https://threadhubb.vercel.app/"
-                )
+                .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
 

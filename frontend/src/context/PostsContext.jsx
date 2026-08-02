@@ -109,8 +109,6 @@ export const PostsProvider = ({ children }) => {
 
   const addPost = async (newPost) => {
     try {
-      // Create post via REST - websocket will broadcast the update back to us
-      // We can also do optimistic UI
       const tempId = Date.now();
       const optimisticPost = { ...newPost, id: tempId };
       setPosts(prev => [optimisticPost, ...prev]);
@@ -120,9 +118,9 @@ export const PostsProvider = ({ children }) => {
       
       const savedPost = await postService.createPost(postToSave);
       
-      // Update temp id with real id (though websocket will also push the real one, 
-      // we remove the temp one to prevent duplicates)
-      setPosts(prev => prev.filter(p => p.id !== tempId));
+      // Update the temporary post with the actual saved post from the backend
+      // so it never disappears, even if the WebSocket is delayed or fails.
+      setPosts(prev => prev.map(p => p.id === tempId ? savedPost : p));
     } catch (err) {
       console.error("Failed to save post to backend", err);
     }
