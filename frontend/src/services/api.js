@@ -43,3 +43,25 @@ export const authService = {
     return JSON.parse(userStr);
   }
 };
+
+export const postService = {
+  async fetchPosts() {
+    const response = await fetch(`${API_URL}/posts`);
+    if (!response.ok) throw new Error('Failed to fetch posts');
+    return await response.json();
+  },
+
+  async createPost(postData) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/posts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(postData)
+    });
+    if (!response.ok) throw new Error('Failed to create post');
+    return await response.json();
+  }
+};

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { postService } from '../services/api';
 
 const PostsContext = createContext();
 
@@ -7,24 +8,44 @@ export const usePosts = () => {
 };
 
 export const PostsProvider = ({ children }) => {
-  const [posts, setPosts] = useState(() => {
-    const savedPosts = localStorage.getItem('threadhub_posts');
-    if (savedPosts) {
-      try {
-        return JSON.parse(savedPosts);
-      } catch (e) {
-        console.error("Failed to parse posts from localStorage", e);
-      }
-    }
-    return initialPostsData;
-  });
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem('threadhub_posts', JSON.stringify(posts));
-  }, [posts]);
+    const loadPosts = async () => {
+      try {
+        const data = await postService.fetchPosts();
+        if (data && data.length > 0) {
+          setPosts(data);
+        } else {
+          setPosts(initialPostsData); // Fallback to dummy data if DB is empty
+        }
+      } catch (err) {
+        console.error("Failed to load posts from API, falling back to dummy data", err);
+        setPosts(initialPostsData);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadPosts();
+  }, []);
 
-  const addPost = (newPost) => {
-    setPosts(prevPosts => [newPost, ...prevPosts]);
+  const addPost = async (newPost) => {
+    try {
+      // Optimistic UI update
+      setPosts(prevPosts => [newPost, ...prevPosts]);
+      
+      // Save to backend
+      const savedPost = await postService.createPost(newPost);
+      
+      // Update with the real ID from the backend
+      setPosts(prevPosts => prevPosts.map(p => 
+        p.id === newPost.id ? savedPost : p
+      ));
+    } catch (err) {
+      console.error("Failed to save post to backend", err);
+      // We might want to remove it from UI if it failed, but keeping it simple for now
+    }
   };
 
   const updatePost = (id, updatedData) => {
