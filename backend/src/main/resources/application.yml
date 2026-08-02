@@ -2,6 +2,11 @@ spring:
   application:
     name: threadhub-backend
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
   # Database configuration
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:threadhubdb}
@@ -32,6 +37,11 @@ spring:
             scope:
               - email
               - profile
+
+server:
+  tomcat:
+    max-http-form-post-size: 10MB
+    max-swallow-size: 10MB
 
 # Custom Application Properties
 app:

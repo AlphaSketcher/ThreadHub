@@ -17,7 +17,10 @@ public class Post {
     private Long id;
 
     private String author;
+    
+    @Column(columnDefinition = "TEXT")
     private String avatar;
+    
     private boolean verified;
 
     private String category;

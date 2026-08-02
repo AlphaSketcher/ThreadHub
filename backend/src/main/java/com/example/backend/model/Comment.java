@@ -18,6 +18,8 @@ public class Comment {
     private Long id;
 
     private String author;
+    
+    @Column(columnDefinition = "TEXT")
     private String avatar;
 
     @Column(columnDefinition = "TEXT")
