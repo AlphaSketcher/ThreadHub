@@ -68,7 +68,7 @@ const CommentNode = ({ comment, postId, addComment, voteComment, addNotification
     <div className="comment-node">
       <div className="comment-content">
         <div className="comment-header-modal">
-          <img src={comment.avatar} alt={comment.author} className="modal-comment-avatar" />
+          <img src={user && user.username === comment.author && user.profileImage ? user.profileImage : comment.avatar} alt={comment.author} className="modal-comment-avatar" />
           <span className="modal-comment-author">{comment.author}</span>
           <span className="modal-comment-time">• <TimeDisplay timestamp={comment.createdAt || comment.time} /></span>
         </div>
@@ -149,6 +149,8 @@ const PostDetailsModal = ({ post, onClose }) => {
 
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
+  const isAuthor = user && user.username === post.author;
+  const displayAvatar = isAuthor && user.profileImage ? user.profileImage : (post.avatar || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y');
 
   const upvotes = post.upvotes || [];
   const downvotes = post.downvotes || [];
@@ -276,7 +278,7 @@ const PostDetailsModal = ({ post, onClose }) => {
         <div className="pdm-body">
           {/* Post Header */}
           <div className="pdm-post-header">
-            <img src={post.avatar} alt="Author" className="pdm-post-avatar" />
+            <img src={displayAvatar} alt="Author" className="pdm-post-avatar" />
             <div>
               <div className="pdm-post-author">{post.author}</div>
               <div className="pdm-post-time"><TimeDisplay timestamp={post.createdAt || post.time} /> in {post.category}</div>

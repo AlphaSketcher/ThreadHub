@@ -36,6 +36,9 @@ const PostItem = ({ post, onOpenModal }) => {
   const user = userStr ? JSON.parse(userStr) : null;
   const isAuthor = user && user.username === post.author;
 
+  // Use the freshest avatar for the current user's posts
+  const displayAvatar = isAuthor && user.profileImage ? user.profileImage : (post.avatar || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y');
+
   // Determine if post is long
   const isLongText = post.snippet && post.snippet.length > 250;
 
@@ -157,7 +160,7 @@ const PostItem = ({ post, onOpenModal }) => {
     >
       <div className="post-meta">
         <div className="post-meta-left">
-          <img src={post.avatar} alt="User" className="post-avatar" />
+          <img src={displayAvatar} alt="User" className="post-avatar" />
           <div className="post-header-info">
             <div className="post-author">{post.author} {post.verified && <CheckCircle2 size={14} color="#3b82f6" className="verified-icon" />}</div>
             <div className="post-time">
@@ -335,7 +338,7 @@ const PostItem = ({ post, onOpenModal }) => {
             <div className="comment-tree-line"></div>
             <div className="top-comment">
               <div className="comment-header">
-                <img src={post.comments[0].avatar} alt="User" className="comment-avatar" />
+                <img src={user && user.username === post.comments[0].author && user.profileImage ? user.profileImage : post.comments[0].avatar} alt="User" className="comment-avatar" />
                 <span className="comment-author">{post.comments[0].author}</span>
                 <span className="comment-time">• {post.comments[0].time}</span>
               </div>

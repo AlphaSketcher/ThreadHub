@@ -3,6 +3,8 @@ package com.example.backend.controller;
 import com.example.backend.dto.ProfileUpdateRequest;
 import com.example.backend.model.User;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.repository.PostRepository;
+import com.example.backend.repository.CommentRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +16,13 @@ import java.util.Optional;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository) {
         this.userRepository = userRepository;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
     }
 
     @PutMapping("/profile")
@@ -37,7 +43,11 @@ public class UserController {
             User user = userOpt.get();
             if (request.getBio() != null) user.setBio(request.getBio());
             if (request.getLocation() != null) user.setLocation(request.getLocation());
-            if (request.getProfileImage() != null) user.setProfileImage(request.getProfileImage());
+            if (request.getProfileImage() != null) {
+                user.setProfileImage(request.getProfileImage());
+                postRepository.updateAvatarByAuthor(request.getProfileImage(), user.getUsername());
+                commentRepository.updateAvatarByAuthor(request.getProfileImage(), user.getUsername());
+            }
             
             userRepository.save(user);
             return ResponseEntity.ok(user);
