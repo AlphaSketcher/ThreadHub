@@ -46,6 +46,8 @@ const PostItem = ({ post, onOpenModal }) => {
   const displayVoteCount = (post.initialVoteCount || 0) + upvotes.length;
   const displayDownvoteCount = (post.initialDownvoteCount || 0) + downvotes.length;
 
+  const categoryColor = post.categoryColor || { bg: "#f1f5f9", text: "#475569" };
+
   const handleVote = (type) => {
     if (!user) {
       alert("You must be logged in to vote.");
@@ -157,8 +159,8 @@ const PostItem = ({ post, onOpenModal }) => {
           <img src={post.avatar} alt="User" className="post-avatar" />
           <span className="post-author">{post.author}</span>
           {post.verified && <CheckCircle2 size={14} color="#3b82f6" className="verified-icon" />}
-          <span className="post-time">• {post.time}</span>
-          <span className="post-category-pill" style={{backgroundColor: post.categoryColor.bg, color: post.categoryColor.text}}>{post.category}</span>
+          <span className="post-time">• {post.time || "Just now"}</span>
+          <span className="post-category-pill" style={{backgroundColor: categoryColor.bg, color: categoryColor.text}}>{post.category}</span>
         </div>
         <div className="post-meta-right">
           <div className="orbit-wrapper">
