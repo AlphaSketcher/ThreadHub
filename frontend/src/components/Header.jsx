@@ -11,8 +11,10 @@ const Header = () => {
   const headerRef = useRef(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
-  const userStr = localStorage.getItem('user');
-  const user = userStr ? JSON.parse(userStr) : null;
+  const [user, setUser] = useState(() => {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+  });
   const { getUserNotifications, getUnreadCount, markAllAsRead } = useNotifications();
 
   useEffect(() => {
@@ -21,8 +23,19 @@ const Header = () => {
         setOpenDropdown(null);
       }
     };
+    
+    const handleUserUpdate = () => {
+      const userStr = localStorage.getItem('user');
+      setUser(userStr ? JSON.parse(userStr) : null);
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    window.addEventListener('userUpdated', handleUserUpdate);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('userUpdated', handleUserUpdate);
+    };
   }, []);
 
   const toggleDropdown = (dropdownName) => {

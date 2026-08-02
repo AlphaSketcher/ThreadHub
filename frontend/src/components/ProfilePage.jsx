@@ -4,22 +4,26 @@ import { MapPin, Calendar, Edit3, FileText, MessageCircle, Heart, Users, Eye } f
 import { usePosts } from '../context/PostsContext';
 import PostItem from './PostItem';
 import PostDetailsModal from './PostDetailsModal';
+import EditProfileModal from './EditProfileModal';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('My Threads');
   const [selectedPost, setSelectedPost] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { posts } = usePosts();
   
-  const userStr = localStorage.getItem('user');
-  const user = userStr ? JSON.parse(userStr) : null;
+  const [user, setUser] = useState(() => {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+  });
 
   // Mock profile data for what's not in localStorage
   const profileData = {
-    name: user?.username || 'Zane',
-    username: `@${(user?.username || 'zane_dev').toLowerCase()}`,
-    bio: 'Student Developer | Passionate about building web apps and learning new technologies.',
-    location: 'Nigeria',
+    name: user?.username || 'User',
+    username: `@${(user?.username || 'user').toLowerCase()}`,
+    bio: user?.bio || 'Student Developer | Passionate about building web apps and learning new technologies.',
+    location: user?.location || 'Nigeria',
     joined: 'July 2026',
     avatar: user?.profileImage || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
     stats: {
@@ -65,7 +69,7 @@ const ProfilePage = () => {
                 <h1 className="profile-name">{profileData.name}</h1>
                 <p className="profile-username">{profileData.username}</p>
               </div>
-              <button className="edit-profile-btn">
+              <button className="edit-profile-btn" onClick={() => setIsEditModalOpen(true)}>
                 <Edit3 size={16} /> Edit Profile
               </button>
             </div>
@@ -152,6 +156,13 @@ const ProfilePage = () => {
       {selectedPost && (
         <PostDetailsModal post={selectedPost} onClose={closePostModal} />
       )}
+      
+      <EditProfileModal 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+        user={user}
+        onUpdate={(updatedUser) => setUser(updatedUser)}
+      />
     </motion.div>
   );
 };
