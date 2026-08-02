@@ -11,6 +11,7 @@ import CreateThreadModal from './components/CreateThreadModal';
 import EditThreadModal from './components/EditThreadModal';
 import BookmarksPage from './components/BookmarksPage';
 import MyThreadsPage from './components/MyThreadsPage';
+import CategoriesPage from './components/CategoriesPage';
 import { ModalProvider } from './context/ModalContext';
 import { BookmarksProvider } from './context/BookmarksContext';
 import { PostsProvider } from './context/PostsContext';
@@ -43,7 +44,7 @@ function App() {
                 <Route path="/" element={<MainLayout />}>
                   <Route index element={<MainFeed />} />
                   <Route path="discover" element={<MainFeed />} />
-                  <Route path="categories" element={<MainFeed />} />
+                  <Route path="categories" element={<CategoriesPage />} />
                   <Route path="category/:categoryId" element={<MainFeed />} />
                   <Route path="bookmarks" element={<BookmarksPage />} />
                   <Route path="my-threads" element={<MyThreadsPage />} />

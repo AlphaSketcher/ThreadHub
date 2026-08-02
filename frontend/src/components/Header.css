@@ -197,7 +197,7 @@
   overflow: hidden;
 }
 
-.user-menu-container:hover .profile-dropdown {
+.user-menu-container.open .profile-dropdown {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
@@ -420,6 +420,20 @@
   
   .shortcut {
     display: none;
+  }
+  
+  /* Highly responsive dropdowns for mobile */
+  .profile-dropdown {
+    position: fixed;
+    top: 70px; /* Below header */
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+    z-index: 1000;
+  }
+  
+  .profile-dropdown::before {
+    display: none; /* Hide the invisible hover gap bridge on mobile */
   }
 }
 .unread-notif { background-color: rgba(99, 102, 241, 0.08); font-weight: 500; }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, SlidersHorizontal, Bell, MessageSquare, User } from 'lucide-react';
 import './Header.css';
 
@@ -7,11 +7,27 @@ import { useNotifications } from '../context/NotificationsContext';
 import TimeDisplay from './TimeDisplay';
 
 const Header = () => {
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const headerRef = useRef(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
   const { getUserNotifications, getUnreadCount, markAllAsRead } = useNotifications();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (headerRef.current && !headerRef.current.contains(event.target)) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const toggleDropdown = (dropdownName) => {
+    setOpenDropdown(openDropdown === dropdownName ? null : dropdownName);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -20,7 +36,7 @@ const Header = () => {
   };
 
   return (
-    <div className="header-wrapper">
+    <div className="header-wrapper" ref={headerRef}>
       <header className="header">
         <div className="header-left">
 
@@ -36,11 +52,11 @@ const Header = () => {
         <div className="header-actions">
           {token ? (
             <div className="auth-icons">
-              <div className="user-menu-container">
-                <div className="icon-btn">
+              <div className={`user-menu-container ${openDropdown === 'messages' ? 'open' : ''}`}>
+                <button className="icon-btn" onClick={() => toggleDropdown('messages')}>
                   <MessageSquare size={22} />
                   <span className="badge">3</span>
-                </div>
+                </button>
                 <div className="profile-dropdown">
                   <div className="dropdown-title-header">Messages</div>
                   <div className="dropdown-divider"></div>
@@ -52,13 +68,16 @@ const Header = () => {
                 </div>
               </div>
               
-              <div className="user-menu-container">
-                <div className="icon-btn" onClick={() => user && markAllAsRead()}>
+              <div className={`user-menu-container ${openDropdown === 'notifications' ? 'open' : ''}`}>
+                <button className="icon-btn" onClick={() => {
+                  toggleDropdown('notifications');
+                  if (user) markAllAsRead();
+                }}>
                   <Bell size={22} />
                   {user && getUnreadCount() > 0 && (
                     <span className="badge">{getUnreadCount()}</span>
                   )}
-                </div>
+                </button>
                 <div className="profile-dropdown">
                   <div className="dropdown-title-header">Notifications</div>
                   <div className="dropdown-divider"></div>
@@ -84,8 +103,8 @@ const Header = () => {
                   <Link to="#" className="dropdown-view-all">View all notifications</Link>
                 </div>
               </div>
-              <div className="user-menu-container">
-                <div className="user-profile-btn" title="Profile options">
+              <div className={`user-menu-container ${openDropdown === 'profile' ? 'open' : ''}`}>
+                <button className="user-profile-btn" title="Profile options" onClick={() => toggleDropdown('profile')}>
                   <div className="user-avatar">
                     {user?.profileImage ? (
                       <img src={user.profileImage} alt="Profile" className="profile-img" />
@@ -94,7 +113,7 @@ const Header = () => {
                     )}
                   </div>
                   <span className="user-name">{user?.username || 'User'}</span>
-                </div>
+                </button>
                 
                 <div className="profile-dropdown">
                   <Link to="#" className="dropdown-header dropdown-header-link">

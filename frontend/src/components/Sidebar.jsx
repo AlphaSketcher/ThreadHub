@@ -56,10 +56,6 @@ const Sidebar = () => {
             <Compass size={18} />
             <span>Discover</span>
           </NavLink>
-          <NavLink to="/categories" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <Grid size={18} />
-            <span>Categories</span>
-          </NavLink>
           <NavLink to="/bookmarks" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Bookmark size={18} />
             <span>Bookmarks</span>

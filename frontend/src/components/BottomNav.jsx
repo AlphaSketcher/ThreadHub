@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Compass, Plus, Bookmark, User } from 'lucide-react';
+import { Home, Compass, Plus, Bookmark, User, LayoutGrid } from 'lucide-react';
 import { useModal } from '../context/ModalContext';
 import './BottomNav.css';
 
@@ -46,9 +46,9 @@ const BottomNav = () => {
         <Bookmark size={22} />
         <span>Saved</span>
       </div>
-      <div className={`nav-item ${isActive('/my-threads') ? 'active' : ''}`} onClick={() => navigate('/my-threads')}>
-        <User size={22} />
-        <span>Profile</span>
+      <div className={`nav-item ${isActive('/categories') ? 'active' : ''}`} onClick={() => navigate('/categories')}>
+        <LayoutGrid size={22} />
+        <span>Categories</span>
       </div>
     </div>
   );
