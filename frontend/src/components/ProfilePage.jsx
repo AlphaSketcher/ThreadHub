@@ -93,29 +93,33 @@ const ProfilePage = () => {
       return;
     }
     
+    const targetUsername = profileUser?.username || decodeURIComponent(paramUsername);
+    
     try {
       setIsFollowLoading(true);
-      const updatedFollowing = await userService.toggleFollow(profileUser.username);
+      const updatedFollowing = await userService.toggleFollow(targetUsername);
       
       // Update local storage
       const updatedUser = { ...loggedInUser, following: updatedFollowing };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       window.dispatchEvent(new Event('userUpdated'));
       
-      const newlyFollowed = updatedFollowing.includes(profileUser.username);
+      const newlyFollowed = updatedFollowing.includes(targetUsername);
       setIsFollowing(newlyFollowed);
       
       // Update profileUser follower count optimistic ui
-      setProfileUser(prev => ({
-        ...prev,
-        followerCount: newlyFollowed ? (prev.followerCount + 1) : Math.max(0, prev.followerCount - 1)
-      }));
+      if (profileUser) {
+        setProfileUser(prev => ({
+          ...prev,
+          followerCount: newlyFollowed ? (prev.followerCount + 1) : Math.max(0, prev.followerCount - 1)
+        }));
+      }
       
       if (newlyFollowed) {
         addNotification({
           type: 'follow',
           fromUser: loggedInUser.username,
-          toUser: profileUser.username,
+          toUser: targetUsername,
           postId: null,
           message: `@${loggedInUser.username} started following you!`
         });
@@ -127,7 +131,8 @@ const ProfilePage = () => {
     }
   };
 
-  const username = profileUser?.username || paramUsername;
+  const decodedUsername = decodeURIComponent(paramUsername);
+  const username = profileUser?.username || decodedUsername;
   const myThreads = posts.filter(post => post.author === username);
   const threadsCount = myThreads.length;
   
@@ -143,15 +148,15 @@ const ProfilePage = () => {
     likesCount += (post.upvotes?.length || 0);
   });
 
-  const derivedAvatar = posts.find(post => post.author === username)?.authorAvatar;
+  const derivedAvatar = posts.find(post => post.author === username)?.avatar;
 
   const profileData = {
-    name: profileUser?.username || paramUsername || 'User',
-    username: `@${(profileUser?.username || paramUsername || 'user').toLowerCase().replace(/\s+/g, '')}`,
+    name: profileUser?.username || decodedUsername || 'User',
+    username: `@${(profileUser?.username || decodedUsername || 'user').toLowerCase().replace(/\s+/g, '')}`,
     bio: profileUser?.bio || 'No bio added yet.',
     location: profileUser?.location || 'Location not set',
-    joined: 'July 2026',
-    avatar: profileUser?.profileImage || derivedAvatar || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
+    joined: profileUser?.createdAt ? `Joined ${new Date(profileUser.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}` : `Joined July 2026`,
+    avatar: profileUser?.profileImage || derivedAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
     stats: {
       threads: threadsCount,
       replies: repliesCount,
