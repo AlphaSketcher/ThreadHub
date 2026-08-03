@@ -5,7 +5,7 @@ import { useBookmarks } from '../context/BookmarksContext';
 import { usePosts } from '../context/PostsContext';
 import { useModal } from '../context/ModalContext';
 import { useNotifications } from '../context/NotificationsContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { userService } from '../services/api';
 import TimeDisplay from './TimeDisplay';
 
@@ -210,13 +210,17 @@ const PostItem = ({ post, onOpenModal }) => {
     >
       <div className="post-meta">
         <div className="post-meta-left">
-          <img src={displayAvatar} alt="User" className="post-avatar" />
-          <div className="post-header-info">
-            <div className="post-author">{post.author} {post.verified && <CheckCircle2 size={14} color="#3b82f6" className="verified-icon" />}</div>
-            <div className="post-time">
-              <TimeDisplay timestamp={post.createdAt || post.time} /> in <span className="post-category">{post.category}</span>
+          <Link to={`/profile/${post.author}`} onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', color: 'inherit' }}>
+            <img src={displayAvatar} alt="User" className="post-avatar" />
+            <div className="post-header-info">
+              <div className="post-author" style={{ cursor: 'pointer' }}>
+                {post.author} {post.verified && <CheckCircle2 size={14} color="#3b82f6" className="verified-icon" />}
+              </div>
+              <div className="post-time">
+                <TimeDisplay timestamp={post.createdAt || post.time} /> in <span className="post-category">{post.category}</span>
+              </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className="post-meta-right">
           {!isAuthor && (
@@ -400,8 +404,10 @@ const PostItem = ({ post, onOpenModal }) => {
             <div className="comment-tree-line"></div>
             <div className="top-comment">
               <div className="comment-header">
-                <img src={user && user.username === post.comments[0].author && user.profileImage ? user.profileImage : post.comments[0].avatar} alt="User" className="comment-avatar" />
-                <span className="comment-author">{post.comments[0].author}</span>
+                <Link to={`/profile/${post.comments[0].author}`} onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'inherit' }}>
+                  <img src={user && user.username === post.comments[0].author && user.profileImage ? user.profileImage : post.comments[0].avatar} alt="User" className="comment-avatar" />
+                  <span className="comment-author" style={{ cursor: 'pointer' }}>{post.comments[0].author}</span>
+                </Link>
                 <span className="comment-time">• {post.comments[0].time}</span>
               </div>
               <p className="comment-text">{post.comments[0].text}</p>

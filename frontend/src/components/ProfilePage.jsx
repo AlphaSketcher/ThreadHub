@@ -1,45 +1,129 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { MapPin, Calendar, Edit3, FileText, MessageCircle, Heart, Users, Eye } from 'lucide-react';
 import { usePosts } from '../context/PostsContext';
+import { useNotifications } from '../context/NotificationsContext';
 import PostItem from './PostItem';
 import PostDetailsModal from './PostDetailsModal';
 import EditProfileModal from './EditProfileModal';
-import { API_URL } from '../services/api';
+import { API_URL, userService } from '../services/api';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
-  const [activeTab, setActiveTab] = useState('My Threads');
+  const { username: paramUsername } = useParams();
+  const navigate = useNavigate();
+  const { addNotification } = useNotifications();
+  const [activeTab, setActiveTab] = useState('Threads');
   const [selectedPost, setSelectedPost] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { posts } = usePosts();
   
-  const [user, setUser] = useState(() => {
+  const [loggedInUser, setLoggedInUser] = useState(() => {
     const userStr = localStorage.getItem('user');
     return userStr ? JSON.parse(userStr) : null;
   });
 
+  const [profileUser, setProfileUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const isOwnProfile = !paramUsername || (loggedInUser && paramUsername === loggedInUser.username);
+  
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        const response = await fetch(`${API_URL}/users/profile`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-          localStorage.setItem('user', JSON.stringify(userData));
-        }
-      } catch (err) {
-        console.error("Failed to fetch profile stats", err);
+    const handleUserUpdate = () => {
+      const updatedUserStr = localStorage.getItem('user');
+      const updatedUser = updatedUserStr ? JSON.parse(updatedUserStr) : null;
+      setLoggedInUser(updatedUser);
+      if (updatedUser && profileUser) {
+        setIsFollowing(updatedUser.following?.includes(profileUser.username) || false);
       }
     };
-    fetchProfile();
-  }, []);
+    window.addEventListener('userUpdated', handleUserUpdate);
+    return () => window.removeEventListener('userUpdated', handleUserUpdate);
+  }, [profileUser]);
 
-  const username = user?.username;
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setIsLoading(true);
+      try {
+        if (isOwnProfile) {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            navigate('/auth');
+            return;
+          }
+          const response = await fetch(`${API_URL}/users/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (response.ok) {
+            const userData = await response.json();
+            setProfileUser(userData);
+            setLoggedInUser(userData);
+            localStorage.setItem('user', JSON.stringify(userData));
+          }
+        } else {
+          // Fetch public profile
+          const userData = await userService.getPublicProfile(paramUsername);
+          setProfileUser(userData);
+          if (loggedInUser) {
+            setIsFollowing(loggedInUser.following?.includes(userData.username) || false);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProfile();
+  }, [paramUsername, isOwnProfile, navigate]);
+
+  const handleFollowToggle = async () => {
+    if (!loggedInUser) {
+      alert("You must be logged in to follow.");
+      navigate('/auth');
+      return;
+    }
+    
+    try {
+      setIsFollowLoading(true);
+      const updatedFollowing = await userService.toggleFollow(profileUser.username);
+      
+      // Update local storage
+      const updatedUser = { ...loggedInUser, following: updatedFollowing };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      window.dispatchEvent(new Event('userUpdated'));
+      
+      const newlyFollowed = updatedFollowing.includes(profileUser.username);
+      setIsFollowing(newlyFollowed);
+      
+      // Update profileUser follower count optimistic ui
+      setProfileUser(prev => ({
+        ...prev,
+        followerCount: newlyFollowed ? (prev.followerCount + 1) : Math.max(0, prev.followerCount - 1)
+      }));
+      
+      if (newlyFollowed) {
+        addNotification({
+          type: 'follow',
+          fromUser: loggedInUser.username,
+          toUser: profileUser.username,
+          postId: null,
+          message: `@${loggedInUser.username} started following you!`
+        });
+      }
+    } catch (err) {
+      console.error("Failed to toggle follow", err);
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
+
+  const username = profileUser?.username;
   const myThreads = posts.filter(post => post.author === username);
   const threadsCount = myThreads.length;
   
@@ -56,24 +140,27 @@ const ProfilePage = () => {
   });
 
   const profileData = {
-    name: user?.username || 'User',
-    username: `@${(user?.username || 'user').toLowerCase()}`,
-    bio: user?.bio || 'No bio added yet.',
-    location: user?.location || 'Add location',
+    name: profileUser?.username || 'User',
+    username: `@${(profileUser?.username || 'user').toLowerCase()}`,
+    bio: profileUser?.bio || 'No bio added yet.',
+    location: profileUser?.location || 'Location not set',
     joined: 'July 2026',
-    avatar: user?.profileImage || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
+    avatar: profileUser?.profileImage || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
     stats: {
       threads: threadsCount,
       replies: repliesCount,
       likes: likesCount,
-      followers: user?.followerCount || 0
+      followers: profileUser?.followerCount || 0
     }
   };
 
   const openPostModal = (post) => setSelectedPost(post);
   const closePostModal = () => setSelectedPost(null);
 
-  const tabs = ['My Threads', 'Replies', 'Bookmarks', 'Liked', 'About'];
+  const tabs = ['Threads', 'Replies', 'Liked'];
+  if (isOwnProfile) {
+    tabs.splice(2, 0, 'Bookmarks');
+  }
 
   return (
     <motion.div 
@@ -102,9 +189,24 @@ const ProfilePage = () => {
                 <h1 className="profile-name">{profileData.name}</h1>
                 <p className="profile-username">{profileData.username}</p>
               </div>
-              <button className="edit-profile-btn" onClick={() => setIsEditModalOpen(true)}>
-                <Edit3 size={16} /> Edit Profile
-              </button>
+              {isOwnProfile ? (
+                <button className="edit-profile-btn" onClick={() => setIsEditModalOpen(true)}>
+                  <Edit3 size={16} /> Edit Profile
+                </button>
+              ) : (
+                <button 
+                  className={`edit-profile-btn ${isFollowing ? 'following' : ''}`} 
+                  onClick={handleFollowToggle}
+                  disabled={isFollowLoading}
+                  style={{
+                    background: isFollowing ? 'transparent' : 'var(--primary)',
+                    color: isFollowing ? 'var(--text-dark)' : 'white',
+                    border: isFollowing ? '1px solid var(--border-color)' : 'none'
+                  }}
+                >
+                  {isFollowLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
+                </button>
+              )}
             </div>
             
             <p className="profile-bio">{profileData.bio}</p>
@@ -160,7 +262,7 @@ const ProfilePage = () => {
         </div>
         
         <div className="profile-tab-content">
-          {activeTab === 'My Threads' && (
+          {activeTab === 'Threads' && (
             <div className="profile-threads-list">
               {myThreads.map(post => (
                 <div key={post.id} className="profile-thread-item" onClick={() => openPostModal(post)}>
@@ -178,7 +280,7 @@ const ProfilePage = () => {
             </div>
           )}
           
-          {activeTab !== 'My Threads' && (
+          {activeTab !== 'Threads' && (
             <div className="empty-tab-state">
               <p>Nothing to show here yet.</p>
             </div>
@@ -193,8 +295,11 @@ const ProfilePage = () => {
       <EditProfileModal 
         isOpen={isEditModalOpen} 
         onClose={() => setIsEditModalOpen(false)} 
-        user={user}
-        onUpdate={(updatedUser) => setUser(updatedUser)}
+        user={profileUser}
+        onUpdate={(updatedUser) => {
+          setProfileUser(updatedUser);
+          setLoggedInUser(updatedUser);
+        }}
       />
     </motion.div>
   );

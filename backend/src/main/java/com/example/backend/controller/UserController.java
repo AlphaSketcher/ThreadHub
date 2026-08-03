@@ -92,6 +92,23 @@ public class UserController {
         return ResponseEntity.status(404).body("User not found");
     }
 
+    @GetMapping("/profile/{username}")
+    public ResponseEntity<?> getPublicProfile(@PathVariable String username) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            // Count followers dynamically
+            user.setFollowerCount(userRepository.countFollowers(user.getUsername()));
+            
+            // Create a DTO or just remove sensitive info before returning
+            user.setPassword(null);
+            user.setEmail(null);
+            
+            return ResponseEntity.ok(user);
+        }
+        return ResponseEntity.status(404).body("User not found");
+    }
+
     @PostMapping("/follow/{targetUsername}")
     public ResponseEntity<?> toggleFollow(@PathVariable String targetUsername, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {

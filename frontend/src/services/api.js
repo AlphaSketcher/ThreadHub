@@ -89,5 +89,13 @@ export const userService = {
     });
     if (!response.ok) throw new Error('Failed to fetch following');
     return await response.json();
+  },
+
+  async getPublicProfile(username) {
+    const response = await fetch(`${API_URL}/users/profile/${username}`, {
+      method: 'GET'
+    });
+    if (!response.ok) throw new Error('Failed to fetch public profile');
+    return await response.json();
   }
 };

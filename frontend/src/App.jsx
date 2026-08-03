@@ -55,6 +55,7 @@ function App() {
                     <Route path="bookmarks" element={<BookmarksPage />} />
                     <Route path="my-threads" element={<MyThreadsPage />} />
                     <Route path="profile" element={<ProfilePage />} />
+                    <Route path="profile/:username" element={<ProfilePage />} />
                     <Route path="following" element={<FollowingPage />} />
                   </Route>
                   <Route path="/auth" element={<Auth />} />
