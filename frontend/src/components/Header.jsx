@@ -4,7 +4,9 @@ import './Header.css';
 
 import { Link, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationsContext';
+import { usePosts } from '../context/PostsContext';
 import TimeDisplay from './TimeDisplay';
+import PostDetailsModal from './PostDetailsModal';
 
 const Header = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -16,6 +18,13 @@ const Header = () => {
     return userStr ? JSON.parse(userStr) : null;
   });
   const { getUserNotifications, getUnreadCount, markAllAsRead } = useNotifications();
+  const { posts } = usePosts();
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [searchSelectedPost, setSearchSelectedPost] = useState(null);
+  const searchInputRef = useRef(null);
+  const mobileSearchInputRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -29,12 +38,22 @@ const Header = () => {
       setUser(userStr ? JSON.parse(userStr) : null);
     };
 
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        mobileSearchInputRef.current?.focus();
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
     window.addEventListener('userUpdated', handleUserUpdate);
+    document.addEventListener('keydown', handleKeyDown);
     
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       window.removeEventListener('userUpdated', handleUserUpdate);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
@@ -48,6 +67,66 @@ const Header = () => {
     window.location.href = '/';
   };
 
+  const filteredPosts = searchQuery.trim() === '' ? [] : posts.filter(post => 
+    post.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    post.snippet?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+  ).slice(0, 5);
+
+  const allUsersMap = {};
+  posts.forEach(post => {
+    if (post.author) {
+      allUsersMap[post.author] = post.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.author}`;
+    }
+  });
+
+  const filteredUsers = searchQuery.trim() === '' ? [] : Object.entries(allUsersMap)
+    .filter(([name]) => name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .map(([name, avatar]) => ({ name, avatar }))
+    .slice(0, 3);
+
+  const SearchSuggestions = () => {
+    if (!isSearchFocused || searchQuery.trim() === '' || (filteredPosts.length === 0 && filteredUsers.length === 0)) {
+      return null;
+    }
+    
+    return (
+      <div className="search-dropdown">
+        {filteredUsers.length > 0 && (
+          <div className="search-section">
+            <div className="search-section-title">Users</div>
+            {filteredUsers.map(u => (
+              <div key={u.name} className="search-user-item" onClick={() => {
+                navigate(`/profile/${encodeURIComponent(u.name)}`);
+                setIsSearchFocused(false);
+                setSearchQuery('');
+              }}>
+                <img src={u.avatar} alt={u.name} className="search-user-avatar" />
+                <span>{u.name}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {filteredPosts.length > 0 && (
+          <div className="search-section">
+            <div className="search-section-title">Threads</div>
+            {filteredPosts.map(p => (
+              <div key={p.id} className="search-thread-item" onClick={() => {
+                setSearchSelectedPost(p);
+                setIsSearchFocused(false);
+                setSearchQuery('');
+              }}>
+                <Search size={14} className="search-item-icon" />
+                <span className="search-thread-title">{p.title}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="header-wrapper" ref={headerRef}>
       <header className="header">
@@ -56,10 +135,22 @@ const Header = () => {
           <img src="/logo.png" alt="ThreadHub" className="mobile-logo" />
         </div>
 
-        <div className="search-bar desktop-search">
+        <div className="search-bar desktop-search" 
+          onFocus={() => setIsSearchFocused(true)} 
+          onBlur={(e) => {
+            // Delay blur to allow clicks on dropdown items
+            setTimeout(() => setIsSearchFocused(false), 200);
+          }}>
           <Search size={18} className="search-icon" />
-          <input type="text" placeholder="Search for topics, categories, or users..." />
+          <input 
+            type="text" 
+            placeholder="Search for topics, categories, or users..." 
+            ref={searchInputRef}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
           <div className="shortcut">Ctrl / K</div>
+          <SearchSuggestions />
         </div>
         
         <div className="header-actions">
@@ -167,13 +258,27 @@ const Header = () => {
         </div>
       </header>
 
-      <div className="mobile-search-container">
+      <div className="mobile-search-container"
+          onFocus={() => setIsSearchFocused(true)} 
+          onBlur={(e) => {
+            setTimeout(() => setIsSearchFocused(false), 200);
+          }}>
         <div className="mobile-search-bar">
           <Search size={18} className="search-icon" />
-          <input type="text" placeholder="Search for topics, categories, or users..." />
-          <SlidersHorizontal size={18} className="search-filter-icon" />
+          <input 
+            type="text" 
+            placeholder="Search for topics, categories, or users..." 
+            ref={mobileSearchInputRef}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
+        <SearchSuggestions />
       </div>
+      
+      {searchSelectedPost && (
+        <PostDetailsModal post={searchSelectedPost} onClose={() => setSearchSelectedPost(null)} />
+      )}
     </div>
   );
 };
