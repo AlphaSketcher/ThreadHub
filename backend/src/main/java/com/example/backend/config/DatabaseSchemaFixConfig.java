@@ -20,6 +20,16 @@ public class DatabaseSchemaFixConfig {
                 jdbcTemplate.execute("ALTER TABLE users ALTER COLUMN profile_image TYPE TEXT");
                 jdbcTemplate.execute("ALTER TABLE posts ALTER COLUMN avatar TYPE TEXT");
                 jdbcTemplate.execute("ALTER TABLE comments ALTER COLUMN avatar TYPE TEXT");
+                
+                // Drop deprecated primitive columns that cause NOT NULL constraint violations on old schemas
+                try {
+                    jdbcTemplate.execute("ALTER TABLE comments DROP COLUMN helpful_count");
+                    jdbcTemplate.execute("ALTER TABLE comments DROP COLUMN not_helpful_count");
+                    logger.info("Successfully dropped deprecated helpful_count columns.");
+                } catch (Exception dropEx) {
+                    logger.info("Deprecated helpful_count columns already dropped or don't exist.");
+                }
+                
                 logger.info("Successfully updated column types using PostgreSQL syntax.");
             } catch (Exception e) {
                 try {
