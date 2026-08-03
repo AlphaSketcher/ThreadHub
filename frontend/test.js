@@ -1,72 +1,68 @@
 async function test() {
   try {
-    // 1. Register a user
-    const creds = { username: 'testuser123', identifier: 'testuser123', email: 'test@example.com', password: 'password123' };
+    // 1. Register user 1
+    const creds1 = { username: 'testuser1', identifier: 'testuser1', email: 'test1@example.com', password: 'password123' };
     await fetch('http://localhost:8080/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(creds)
+      body: JSON.stringify(creds1)
     });
-
-    // 2. Login
-    let loginRes = await fetch('http://localhost:8080/api/auth/login', {
+    const loginRes1 = await fetch('http://localhost:8080/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(creds)
+      body: JSON.stringify(creds1)
     });
-    
-    if (!loginRes.ok) {
-        console.error('Login failed', await loginRes.text());
-        return;
-    }
-    
-    let token = await loginRes.text(); // Assuming it returns a raw string or JSON
-    try {
-        let jsonToken = JSON.parse(token);
-        if (jsonToken.token) token = jsonToken.token;
-    } catch (e) {}
+    const loginData1 = await loginRes1.json();
+    const token1 = loginData1.token;
 
-    // 3. Create a post
-    let postRes = await fetch('http://localhost:8080/api/posts', {
+    // 2. Register user 2
+    const creds2 = { username: 'testuser2', identifier: 'testuser2', email: 'test2@example.com', password: 'password123' };
+    await fetch('http://localhost:8080/api/auth/register', {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        title: 'Test Post',
-        snippet: 'Test content',
-        category: 'Technology'
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(creds2)
     });
-    
-    if (!postRes.ok) {
-        console.error('Create post failed', await postRes.text());
-        return;
-    }
-
-    let post = await postRes.json();
-    console.log('Created Post:', post.id);
-
-    // 4. Add a comment
-    let commentRes = await fetch(`http://localhost:8080/api/posts/${post.id}/comments`, {
+    const loginRes2 = await fetch('http://localhost:8080/api/auth/login', {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        text: 'Test comment'
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(creds2)
+    });
+    const loginData2 = await loginRes2.json();
+    const token2 = loginData2.token;
+
+    // 3. Create post with user 1
+    const postPayload = {
+      title: 'Test Post',
+      snippet: 'Test content',
+      category: 'Technology',
+      author: creds1.username
+    };
+    const createRes = await fetch('http://localhost:8080/api/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token1}` },
+      body: JSON.stringify(postPayload)
+    });
+    const createdPost = await createRes.json();
+    
+    // 4. Comment with user 2 (triggers notification)
+    const commentPayload = {
+      text: 'Test comment from user 2',
+      author: creds2.username
+    };
+    const commentRes = await fetch(`http://localhost:8080/api/posts/${createdPost.id}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token2}` },
+      body: JSON.stringify(commentPayload)
     });
     
     if (!commentRes.ok) {
-        console.error('Add comment failed', await commentRes.text());
-        return;
+        const err = await commentRes.text();
+        console.error("Comment failed:", err);
+    } else {
+        const finalPost = await commentRes.json();
+        console.log("Comment succeeded! Post comments:", finalPost.comments.length);
     }
 
-    let updatedPost = await commentRes.json();
-    console.log('Post after comment:', JSON.stringify(updatedPost, null, 2));
   } catch(e) {
     console.error(e);
   }

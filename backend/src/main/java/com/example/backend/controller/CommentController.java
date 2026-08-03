@@ -8,6 +8,7 @@ import com.example.backend.repository.CommentRepository;
 import com.example.backend.repository.PostRepository;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.repository.NotificationRepository;
+import com.example.backend.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -19,7 +20,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/posts/{postId}/comments")
-@Transactional
 public class CommentController {
 
     @Autowired
@@ -36,6 +36,9 @@ public class CommentController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    
+    @Autowired
+    private CommentService commentService;
 
     private String getActualUsername() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -49,84 +52,20 @@ public class CommentController {
             if (comment == null || comment.getText() == null || comment.getText().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("Comment text cannot be empty.");
             }
-
-            Optional<Post> postOpt = postRepository.findById(postId);
-            if (postOpt.isEmpty()) {
-                return ResponseEntity.status(404).body("Post not found.");
-            }
             
-            Post post = postOpt.get();
-            String actualUsername = "Guest";
-            try {
-                actualUsername = getActualUsername();
-            } catch (Exception e) {
-                return ResponseEntity.status(401).body("You must be logged in to comment.");
-            }
-            
-            if (comment.getAuthor() == null || comment.getAuthor().isEmpty() || comment.getAuthor().equals("Guest")) {
-                comment.setAuthor(actualUsername);
-            }
-            
-            comment.setPost(post);
-            // Ensure lists are initialized
-            if (comment.getHelpfulVotes() == null) comment.setHelpfulVotes(new java.util.ArrayList<>());
-            if (comment.getNotHelpfulVotes() == null) comment.setNotHelpfulVotes(new java.util.ArrayList<>());
-
-            Comment savedComment = commentRepository.save(comment);
-            
-            if (post.getComments() == null) {
-                post.setComments(new java.util.ArrayList<>());
-            }
-            if (!post.getComments().contains(savedComment)) {
-                post.getComments().add(savedComment);
-            }
-            
-            post.setHasComment(true);
-            post.setDiscussCount(post.getDiscussCount() + 1);
-            Post updatedPost = postRepository.save(post);
-            
-            // Eagerly initialize all lazy collections before Jackson serialization on worker thread
-            if (updatedPost.getComments() != null) {
-                updatedPost.getComments().size();
-                for(Comment c : updatedPost.getComments()) {
-                    if (c.getHelpfulVotes() != null) c.getHelpfulVotes().size();
-                    if (c.getNotHelpfulVotes() != null) c.getNotHelpfulVotes().size();
-                }
-            }
-            if (updatedPost.getTags() != null) updatedPost.getTags().size();
-            if (updatedPost.getImages() != null) updatedPost.getImages().size();
-            if (updatedPost.getUpvotes() != null) updatedPost.getUpvotes().size();
-            if (updatedPost.getDownvotes() != null) updatedPost.getDownvotes().size();
-            
-            WebSocketMessage<Post> wsMessage = new WebSocketMessage<>("POST_UPDATED", updatedPost);
-            System.out.println("Broadcasted post comments size: " + (updatedPost.getComments() != null ? updatedPost.getComments().size() : "null"));
-            messagingTemplate.convertAndSend("/topic/posts", wsMessage);
-            
-            // Create Notification safely
-            try {
-                if (post.getAuthor() != null && !post.getAuthor().equals(actualUsername)) {
-                    Notification notif = new Notification();
-                    notif.setRecipient(post.getAuthor());
-                    notif.setSender(actualUsername);
-                    notif.setType("comment");
-                    String cText = comment.getText() != null ? comment.getText() : "";
-                    String truncatedComment = cText.length() > 30 ? cText.substring(0, 30) + "..." : cText;
-                    notif.setMessage("@" + actualUsername + " commented on your post: \"" + truncatedComment + "\"");
-                    notif.setPostId(post.getId());
-                    Notification savedNotif = notificationRepository.save(notif);
-                    
-                    // Broadcast Notification to recipient
-                    messagingTemplate.convertAndSend("/topic/notifications/" + post.getAuthor(), savedNotif);
-                }
-            } catch (Exception e) {
-                System.err.println("Failed to send comment notification: " + e.getMessage());
-                // Non-fatal error, do not fail the request
-            }
-            
+            Post updatedPost = commentService.addCommentTransaction(postId, comment);
             return ResponseEntity.ok(updatedPost);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (SecurityException e) {
+            return ResponseEntity.status(401).body(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body("An internal error occurred while posting your comment.");
+            Throwable rootCause = e;
+            while (rootCause.getCause() != null) {
+                rootCause = rootCause.getCause();
+            }
+            return ResponseEntity.status(500).body("DB Error: " + rootCause.getMessage());
         }
     }
 
