@@ -67,15 +67,17 @@ public class CommentController {
         Post updatedPost = postRepository.save(post);
         
         // Eagerly initialize all lazy collections before Jackson serialization on worker thread
-        updatedPost.getComments().size();
-        updatedPost.getTags().size();
-        updatedPost.getImages().size();
-        updatedPost.getUpvotes().size();
-        updatedPost.getDownvotes().size();
-        for(Comment c : updatedPost.getComments()) {
-            c.getHelpfulVotes().size();
-            c.getNotHelpfulVotes().size();
+        if (updatedPost.getComments() != null) {
+            updatedPost.getComments().size();
+            for(Comment c : updatedPost.getComments()) {
+                if (c.getHelpfulVotes() != null) c.getHelpfulVotes().size();
+                if (c.getNotHelpfulVotes() != null) c.getNotHelpfulVotes().size();
+            }
         }
+        if (updatedPost.getTags() != null) updatedPost.getTags().size();
+        if (updatedPost.getImages() != null) updatedPost.getImages().size();
+        if (updatedPost.getUpvotes() != null) updatedPost.getUpvotes().size();
+        if (updatedPost.getDownvotes() != null) updatedPost.getDownvotes().size();
         
         WebSocketMessage<Post> wsMessage = new WebSocketMessage<>("POST_UPDATED", updatedPost);
         messagingTemplate.convertAndSend("/topic/posts", wsMessage);
@@ -148,15 +150,17 @@ public class CommentController {
         commentRepository.save(comment);
         
         // Eagerly initialize all lazy collections before Jackson serialization on worker thread
-        post.getComments().size();
-        post.getTags().size();
-        post.getImages().size();
-        post.getUpvotes().size();
-        post.getDownvotes().size();
-        for(Comment c : post.getComments()) {
-            c.getHelpfulVotes().size();
-            c.getNotHelpfulVotes().size();
+        if (post.getComments() != null) {
+            post.getComments().size();
+            for(Comment c : post.getComments()) {
+                if (c.getHelpfulVotes() != null) c.getHelpfulVotes().size();
+                if (c.getNotHelpfulVotes() != null) c.getNotHelpfulVotes().size();
+            }
         }
+        if (post.getTags() != null) post.getTags().size();
+        if (post.getImages() != null) post.getImages().size();
+        if (post.getUpvotes() != null) post.getUpvotes().size();
+        if (post.getDownvotes() != null) post.getDownvotes().size();
         
         // We broadcast POST_UPDATED so the entire post (including comments) updates in the UI
         WebSocketMessage<Post> wsMessage = new WebSocketMessage<>("POST_UPDATED", post);

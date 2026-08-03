@@ -5,6 +5,9 @@ import com.example.backend.model.User;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.repository.PostRepository;
 import com.example.backend.repository.CommentRepository;
+import com.example.backend.model.Notification;
+import com.example.backend.repository.NotificationRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +23,15 @@ public class UserController {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final NotificationRepository notificationRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public UserController(UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository) {
+    public UserController(UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository, NotificationRepository notificationRepository, SimpMessagingTemplate messagingTemplate) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
+        this.notificationRepository = notificationRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @PutMapping("/profile")
@@ -107,6 +114,17 @@ public class UserController {
                 user.getFollowing().remove(targetUsername);
             } else {
                 user.getFollowing().add(targetUsername);
+                
+                // Create Notification
+                Notification notif = new Notification();
+                notif.setRecipient(targetUsername);
+                notif.setSender(currentUsername);
+                notif.setType("follow");
+                notif.setMessage("@" + currentUsername + " started following you!");
+                Notification savedNotif = notificationRepository.save(notif);
+                
+                // Broadcast Notification to recipient
+                messagingTemplate.convertAndSend("/topic/notifications/" + targetUsername, savedNotif);
             }
             
             userRepository.save(user);
