@@ -109,18 +109,18 @@ export const PostsProvider = ({ children }) => {
 
   const addPost = async (newPost) => {
     try {
-      const tempId = Date.now();
-      const optimisticPost = { ...newPost, id: tempId };
-      setPosts(prev => [optimisticPost, ...prev]);
-      
       const postToSave = { ...newPost };
       delete postToSave.id; // ensure ID is empty for DB
       
       const savedPost = await postService.createPost(postToSave);
       
-      // Update the temporary post with the actual saved post from the backend
-      // so it never disappears, even if the WebSocket is delayed or fails.
-      setPosts(prev => prev.map(p => p.id === tempId ? savedPost : p));
+      // STOMP POST_CREATED event will handle adding it to the state for everyone,
+      // but we can add it here as well just in case WebSocket is slow.
+      // We check for duplicates in the STOMP handler anyway.
+      setPosts(prev => {
+        if (prev.some(p => p.id === savedPost.id)) return prev;
+        return [savedPost, ...prev];
+      });
     } catch (err) {
       console.error("Failed to save post to backend", err);
     }

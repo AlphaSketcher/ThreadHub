@@ -77,7 +77,9 @@ public class CommentController {
             if (post.getComments() == null) {
                 post.setComments(new java.util.ArrayList<>());
             }
-            post.getComments().add(savedComment);
+            if (!post.getComments().contains(savedComment)) {
+                post.getComments().add(savedComment);
+            }
             
             post.setHasComment(true);
             post.setDiscussCount(post.getDiscussCount() + 1);
@@ -97,6 +99,7 @@ public class CommentController {
             if (updatedPost.getDownvotes() != null) updatedPost.getDownvotes().size();
             
             WebSocketMessage<Post> wsMessage = new WebSocketMessage<>("POST_UPDATED", updatedPost);
+            System.out.println("Broadcasted post comments size: " + (updatedPost.getComments() != null ? updatedPost.getComments().size() : "null"));
             messagingTemplate.convertAndSend("/topic/posts", wsMessage);
             
             // Create Notification safely
