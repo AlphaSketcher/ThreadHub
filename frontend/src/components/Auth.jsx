@@ -66,8 +66,8 @@ const Auth = () => {
         
         {/* LEFT PANEL - ILLUSTRATION */}
         <div className="new-auth-left">
-          {/* Changed path to /auth-left.png to match the generated image */}
-          <img src="/auth-left.png" alt="Illustration" className="new-auth-illus" onError={(e) => {
+          {/* Changed path to /auth-left.webp to match the generated image */}
+          <img src="/auth-left.webp" alt="Illustration" className="new-auth-illus" onError={(e) => {
               e.target.onerror = null; 
               e.target.src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop";
           }}/>

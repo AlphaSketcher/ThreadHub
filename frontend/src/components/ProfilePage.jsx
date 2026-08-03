@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, Calendar, Edit3, FileText, MessageCircle, Heart, Users, Eye } from 'lucide-react';
+import { MapPin, Calendar, Edit3, MessageCircle, Heart, Users, FileText, Eye, Trash2 } from 'lucide-react';
 import { usePosts } from '../context/PostsContext';
 import { useNotifications } from '../context/NotificationsContext';
+import { useBookmarks } from '../context/BookmarksContext';
+import { useModal } from '../context/ModalContext';
 import PostItem from './PostItem';
 import PostDetailsModal from './PostDetailsModal';
 import EditProfileModal from './EditProfileModal';
@@ -17,7 +19,9 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('Threads');
   const [selectedPost, setSelectedPost] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const { posts } = usePosts();
+  const { posts, deletePost } = usePosts();
+  const { savedPosts } = useBookmarks();
+  const { openEditThread } = useModal();
   
   const [loggedInUser, setLoggedInUser] = useState(() => {
     const userStr = localStorage.getItem('user');
@@ -123,7 +127,7 @@ const ProfilePage = () => {
     }
   };
 
-  const username = profileUser?.username;
+  const username = profileUser?.username || paramUsername;
   const myThreads = posts.filter(post => post.author === username);
   const threadsCount = myThreads.length;
   
@@ -139,13 +143,15 @@ const ProfilePage = () => {
     likesCount += (post.upvotes?.length || 0);
   });
 
+  const derivedAvatar = posts.find(post => post.author === username)?.authorAvatar;
+
   const profileData = {
-    name: profileUser?.username || 'User',
-    username: `@${(profileUser?.username || 'user').toLowerCase()}`,
+    name: profileUser?.username || paramUsername || 'User',
+    username: `@${(profileUser?.username || paramUsername || 'user').toLowerCase().replace(/\s+/g, '')}`,
     bio: profileUser?.bio || 'No bio added yet.',
     location: profileUser?.location || 'Location not set',
     joined: 'July 2026',
-    avatar: profileUser?.profileImage || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
+    avatar: profileUser?.profileImage || derivedAvatar || 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y',
     stats: {
       threads: threadsCount,
       replies: repliesCount,
@@ -157,10 +163,14 @@ const ProfilePage = () => {
   const openPostModal = (post) => setSelectedPost(post);
   const closePostModal = () => setSelectedPost(null);
 
-  const tabs = ['Threads', 'Replies', 'Liked'];
+  const tabs = ['Threads', 'Replies'];
   if (isOwnProfile) {
-    tabs.splice(2, 0, 'Bookmarks');
+    tabs.push('Bookmarks');
   }
+
+  const myReplies = posts.filter(post => 
+    post.comments?.some(comment => comment.author === username)
+  );
 
   return (
     <motion.div 
@@ -271,16 +281,81 @@ const ProfilePage = () => {
                     <p className="pt-snippet">{(post.snippet || '').substring(0, 80)}...</p>
                   </div>
                   <div className="pt-right">
-                    <span className="pt-stat"><MessageCircle size={14} /> {post.comments?.length || Math.floor(Math.random() * 30)}</span>
-                    <span className="pt-stat"><Eye size={14} /> {Math.floor(Math.random() * 500) + 100}</span>
+                    <span className="pt-stat"><MessageCircle size={14} /> {post.comments?.length || 0}</span>
+                    <span className="pt-stat"><Eye size={14} /> {post.views || 0}</span>
+                    <span className="pt-time">2 days ago</span>
+                    {isOwnProfile && (
+                      <div className="pt-actions" onClick={e => e.stopPropagation()}>
+                        <button className="icon-btn edit" onClick={() => openEditThread(post)} title="Edit Thread">
+                          <Edit3 size={16} />
+                        </button>
+                        <button className="icon-btn delete" onClick={() => {
+                          if (window.confirm('Are you sure you want to delete this thread?')) {
+                            deletePost(post.id);
+                          }
+                        }} title="Delete Thread">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {myThreads.length === 0 && (
+                <div className="empty-tab-state">
+                  <p>No threads posted yet.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'Replies' && (
+            <div className="profile-threads-list">
+              {myReplies.map(post => (
+                <div key={post.id} className="profile-thread-item" onClick={() => openPostModal(post)}>
+                  <div className="pt-left">
+                    <h3 className="pt-title">Replied to: {post.title}</h3>
+                    <p className="pt-snippet">{(post.snippet || '').substring(0, 80)}...</p>
+                  </div>
+                  <div className="pt-right">
+                    <span className="pt-stat"><MessageCircle size={14} /> {post.comments?.length || 0}</span>
+                    <span className="pt-stat"><Eye size={14} /> {post.views || 0}</span>
                     <span className="pt-time">2 days ago</span>
                   </div>
                 </div>
               ))}
+              {myReplies.length === 0 && (
+                <div className="empty-tab-state">
+                  <p>No replies yet.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'Bookmarks' && (
+            <div className="profile-threads-list">
+              {savedPosts.map(post => (
+                <div key={post.id} className="profile-thread-item" onClick={() => openPostModal(post)}>
+                  <div className="pt-left">
+                    <h3 className="pt-title">{post.title}</h3>
+                    <p className="pt-snippet">{(post.snippet || '').substring(0, 80)}...</p>
+                  </div>
+                  <div className="pt-right">
+                    <span className="pt-stat"><MessageCircle size={14} /> {post.comments?.length || 0}</span>
+                    <span className="pt-stat"><Eye size={14} /> {post.views || 0}</span>
+                    <span className="pt-time">2 days ago</span>
+                  </div>
+                </div>
+              ))}
+              {savedPosts.length === 0 && (
+                <div className="empty-tab-state">
+                  <p>No bookmarks yet.</p>
+                </div>
+              )}
             </div>
           )}
           
-          {activeTab !== 'Threads' && (
+          {!['Threads', 'Replies', 'Bookmarks'].includes(activeTab) && (
             <div className="empty-tab-state">
               <p>Nothing to show here yet.</p>
             </div>

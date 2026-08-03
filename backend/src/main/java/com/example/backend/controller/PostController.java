@@ -145,4 +145,23 @@ public class PostController {
         
         return ResponseEntity.ok(updatedPost);
     }
+    
+    @PutMapping("/{id}/view")
+    public ResponseEntity<Post> incrementView(@PathVariable Long id) {
+        Optional<Post> postOpt = postRepository.findById(id);
+        if (postOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Post post = postOpt.get();
+        post.setViews(post.getViews() + 1);
+        
+        Post updatedPost = postRepository.save(post);
+        
+        // Broadcast update
+        WebSocketMessage<Post> wsMessage = new WebSocketMessage<>("POST_UPDATED", updatedPost);
+        messagingTemplate.convertAndSend("/topic/posts", wsMessage);
+        
+        return ResponseEntity.ok(updatedPost);
+    }
 }

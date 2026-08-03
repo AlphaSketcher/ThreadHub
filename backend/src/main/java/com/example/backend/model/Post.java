@@ -46,6 +46,8 @@ public class Post {
 
     private int discussCount;
     private boolean hasComment;
+    
+    private int views = 0;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
@@ -101,6 +103,9 @@ public class Post {
 
     public List<Comment> getComments() { return comments; }
     public void setComments(List<Comment> comments) { this.comments = comments; }
+
+    public int getViews() { return views; }
+    public void setViews(int views) { this.views = views; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

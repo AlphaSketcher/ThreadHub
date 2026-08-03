@@ -57,11 +57,31 @@ export const postService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       },
-      body: JSON.stringify(postData)
+      body: JSON.stringify(postData),
     });
     if (!response.ok) throw new Error('Failed to create post');
+    return await response.json();
+  },
+
+  async deletePost(id) {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${API_URL}/posts/${id}`, {
+      method: 'DELETE',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      }
+    });
+    if (!response.ok) throw new Error('Failed to delete post');
+    return true;
+  },
+
+  async incrementView(id) {
+    const response = await fetch(`${API_URL}/posts/${id}/view`, {
+      method: 'PUT'
+    });
+    if (!response.ok) throw new Error('Failed to increment view');
     return await response.json();
   }
 };
