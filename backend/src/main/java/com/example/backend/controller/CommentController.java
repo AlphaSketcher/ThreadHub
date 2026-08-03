@@ -66,6 +66,17 @@ public class CommentController {
         post.setDiscussCount(post.getDiscussCount() + 1);
         Post updatedPost = postRepository.save(post);
         
+        // Eagerly initialize all lazy collections before Jackson serialization on worker thread
+        updatedPost.getComments().size();
+        updatedPost.getTags().size();
+        updatedPost.getImages().size();
+        updatedPost.getUpvotes().size();
+        updatedPost.getDownvotes().size();
+        for(Comment c : updatedPost.getComments()) {
+            c.getHelpfulVotes().size();
+            c.getNotHelpfulVotes().size();
+        }
+        
         WebSocketMessage<Post> wsMessage = new WebSocketMessage<>("POST_UPDATED", updatedPost);
         messagingTemplate.convertAndSend("/topic/posts", wsMessage);
         
@@ -135,6 +146,17 @@ public class CommentController {
         }
 
         commentRepository.save(comment);
+        
+        // Eagerly initialize all lazy collections before Jackson serialization on worker thread
+        post.getComments().size();
+        post.getTags().size();
+        post.getImages().size();
+        post.getUpvotes().size();
+        post.getDownvotes().size();
+        for(Comment c : post.getComments()) {
+            c.getHelpfulVotes().size();
+            c.getNotHelpfulVotes().size();
+        }
         
         // We broadcast POST_UPDATED so the entire post (including comments) updates in the UI
         WebSocketMessage<Post> wsMessage = new WebSocketMessage<>("POST_UPDATED", post);

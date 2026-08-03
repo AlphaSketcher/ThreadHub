@@ -125,6 +125,17 @@ public class PostController {
         
         Post updatedPost = postRepository.save(post);
         
+        // Eagerly initialize all lazy collections before Jackson serialization on worker thread
+        updatedPost.getComments().size();
+        updatedPost.getTags().size();
+        updatedPost.getImages().size();
+        updatedPost.getUpvotes().size();
+        updatedPost.getDownvotes().size();
+        for(com.example.backend.model.Comment c : updatedPost.getComments()) {
+            c.getHelpfulVotes().size();
+            c.getNotHelpfulVotes().size();
+        }
+        
         // Broadcast update
         WebSocketMessage<Post> wsMessage = new WebSocketMessage<>("POST_UPDATED", updatedPost);
         messagingTemplate.convertAndSend("/topic/posts", wsMessage);
