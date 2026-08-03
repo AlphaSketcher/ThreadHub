@@ -59,7 +59,7 @@ const CommentNode = ({ comment, postId, addComment, voteComment, addNotification
       setIsReplying(false);
       setReplyText('');
     } catch (e) {
-      addToast("Unable to post your reply. Please try again.", "error");
+      addToast(`Unable to post your reply: ${e.message}`, "error");
     }
   };
 
@@ -206,7 +206,7 @@ const PostDetailsModal = ({ post: initialPost, onClose }) => {
       addToast("Your comment has been posted successfully.", "success");
       setMainCommentText('');
     } catch (e) {
-      addToast("Unable to post your comment. Please try again.", "error");
+      addToast(`Unable to post your comment: ${e.message}`, "error");
     }
   };
 
