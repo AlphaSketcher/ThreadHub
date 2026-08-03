@@ -19,6 +19,8 @@ import { ModalProvider } from './context/ModalContext';
 import { BookmarksProvider } from './context/BookmarksContext';
 import { PostsProvider } from './context/PostsContext';
 import { NotificationsProvider } from './context/NotificationsContext';
+import { ToastProvider } from './context/ToastContext';
+import { ToastContainer } from './components/Toast';
 import './App.css';
 
 const MainLayout = () => (
@@ -39,30 +41,33 @@ const MainLayout = () => (
 function App() {
   return (
     <Router>
-      <BookmarksProvider>
-        <PostsProvider>
-          <NotificationsProvider>
-            <ModalProvider>
-              <Routes>
-                <Route path="/" element={<MainLayout />}>
-                  <Route index element={<MainFeed />} />
-                  <Route path="creators" element={<CreatorsPage />} />
-                  <Route path="categories" element={<CategoriesPage />} />
-                  <Route path="category/:categoryId" element={<MainFeed />} />
-                  <Route path="bookmarks" element={<BookmarksPage />} />
-                  <Route path="my-threads" element={<MyThreadsPage />} />
-                  <Route path="profile" element={<ProfilePage />} />
-                  <Route path="following" element={<FollowingPage />} />
-                </Route>
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
-              </Routes>
-              <CreateThreadModal />
-              <EditThreadModal />
-            </ModalProvider>
-          </NotificationsProvider>
-        </PostsProvider>
-      </BookmarksProvider>
+      <ToastProvider>
+        <BookmarksProvider>
+          <PostsProvider>
+            <NotificationsProvider>
+              <ModalProvider>
+                <Routes>
+                  <Route path="/" element={<MainLayout />}>
+                    <Route index element={<MainFeed />} />
+                    <Route path="creators" element={<CreatorsPage />} />
+                    <Route path="categories" element={<CategoriesPage />} />
+                    <Route path="category/:categoryId" element={<MainFeed />} />
+                    <Route path="bookmarks" element={<BookmarksPage />} />
+                    <Route path="my-threads" element={<MyThreadsPage />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="following" element={<FollowingPage />} />
+                  </Route>
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+                </Routes>
+                <CreateThreadModal />
+                <EditThreadModal />
+                <ToastContainer />
+              </ModalProvider>
+            </NotificationsProvider>
+          </PostsProvider>
+        </BookmarksProvider>
+      </ToastProvider>
     </Router>
   );
 }

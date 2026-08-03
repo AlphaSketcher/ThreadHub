@@ -230,24 +230,27 @@ export const PostsProvider = ({ children }) => {
          if (response.status === 401) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            alert('Your session has expired. Please log in again.');
             window.location.href = '/auth';
-            return;
+            throw new Error('Your session has expired. Please log in again.');
          }
          const errorText = await response.text();
-         alert(`Failed to post comment: ${errorText}`);
          console.error("Backend error when saving comment", errorText);
          // Rollback optimistic update
          setPosts(prevPosts => prevPosts.map(post => {
            if (post.id === postId) {
-             return { ...post, comments: post.comments.filter(c => c.id !== tempId), discussCount: Math.max(0, post.discussCount - 1) };
+             return { ...post, comments: post.comments.filter(c => c.id !== tempId), discussCount: Math.max(0, (post.discussCount || 1) - 1) };
            }
            return post;
          }));
+         
+         throw new Error(errorText || 'Failed to post comment');
       }
-      // The websocket will broadcast the updated post, so UI updates automatically if successful!
+      
+      // Return true to indicate success to the caller
+      return true;
     } catch (err) {
       console.error("Failed to add comment", err);
+      throw err;
     }
   };
 

@@ -4,11 +4,13 @@ import { X, HeartCrack, Lightbulb, Reply, MoreHorizontal, ThumbsUp, ThumbsDown, 
 import { useBookmarks } from '../context/BookmarksContext';
 import { usePosts } from '../context/PostsContext';
 import { useNotifications } from '../context/NotificationsContext';
+import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import TimeDisplay from './TimeDisplay';
 import './PostDetailsModal.css';
 
 const CommentNode = ({ comment, postId, addComment, voteComment, addNotification, user, navigate, postAuthor }) => {
+  const { addToast } = useToast();
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState('');
   
@@ -37,31 +39,28 @@ const CommentNode = ({ comment, postId, addComment, voteComment, addNotification
     voteComment(postId, comment.id, user.username, 'not-helpful');
   };
 
-  const handleReplySubmit = () => {
+  const handleReplySubmit = async () => {
     if (!user) {
-      alert("You must be logged in to reply.");
+      addToast("You must be logged in to reply.", "warning");
       navigate('/auth');
       return;
     }
     if (!replyText.trim()) return;
 
-    addComment(postId, comment.id, {
-      author: user.username,
-      avatar: user.profileImage || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
-      time: "Just now",
-      text: replyText.trim()
-    });
+    try {
+      await addComment(postId, comment.id, {
+        author: user.username,
+        avatar: user.profileImage || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
+        time: "Just now",
+        text: replyText.trim()
+      });
 
-    addNotification({
-      type: 'reply',
-      fromUser: user.username,
-      toUser: comment.author,
-      postId: postId,
-      message: `@${user.username} replied to your comment: "${replyText.trim().substring(0, 30)}..."`
-    });
-
-    setIsReplying(false);
-    setReplyText('');
+      addToast("Your reply has been posted successfully.", "success");
+      setIsReplying(false);
+      setReplyText('');
+    } catch (e) {
+      addToast("Unable to post your reply. Please try again.", "error");
+    }
   };
 
   return (
@@ -150,6 +149,7 @@ const PostDetailsModal = ({ post: initialPost, onClose }) => {
 
   const { toggleBookmark, isBookmarked } = useBookmarks();
   const { toggleVote, addComment, voteComment, posts } = usePosts();
+  const { addToast } = useToast();
   
   // Always use the freshest version of the post from the context so optimistic updates show up immediately
   const post = posts.find(p => p.id === initialPost.id) || initialPost;
@@ -187,30 +187,27 @@ const PostDetailsModal = ({ post: initialPost, onClose }) => {
     }
   };
 
-  const submitMainComment = () => {
+  const submitMainComment = async () => {
     if (!user) {
-      alert("You must be logged in to comment.");
+      addToast("You must be logged in to comment.", "warning");
       navigate('/auth');
       return;
     }
     if (!mainCommentText.trim()) return;
     
-    addComment(post.id, null, {
-      author: user.username,
-      avatar: user.profileImage || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
-      time: "Just now",
-      text: mainCommentText.trim()
-    });
+    try {
+      await addComment(post.id, null, {
+        author: user.username,
+        avatar: user.profileImage || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y",
+        time: "Just now",
+        text: mainCommentText.trim()
+      });
 
-    addNotification({
-      type: 'comment',
-      fromUser: user.username,
-      toUser: post.author,
-      postId: post.id,
-      message: `@${user.username} commented on your post: "${mainCommentText.trim().substring(0, 30)}..."`
-    });
-
-    setMainCommentText('');
+      addToast("Your comment has been posted successfully.", "success");
+      setMainCommentText('');
+    } catch (e) {
+      addToast("Unable to post your comment. Please try again.", "error");
+    }
   };
 
   useEffect(() => {
