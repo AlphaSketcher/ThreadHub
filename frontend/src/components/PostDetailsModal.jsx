@@ -144,12 +144,15 @@ const CommentNode = ({ comment, postId, addComment, voteComment, addNotification
   );
 };
 
-const PostDetailsModal = ({ post, onClose }) => {
+const PostDetailsModal = ({ post: initialPost, onClose }) => {
   const [mainCommentText, setMainCommentText] = useState('');
   const commentInputRef = React.useRef(null);
 
   const { toggleBookmark, isBookmarked } = useBookmarks();
-  const { toggleVote, addComment, voteComment } = usePosts();
+  const { toggleVote, addComment, voteComment, posts } = usePosts();
+  
+  // Always use the freshest version of the post from the context so optimistic updates show up immediately
+  const post = posts.find(p => p.id === initialPost.id) || initialPost;
   const { addNotification } = useNotifications();
   const navigate = useNavigate();
   const saved = isBookmarked(post.id);
